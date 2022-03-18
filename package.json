@@ -1,0 +1,22 @@
+{
+  "name": "google-forms-automation",
+  "version": "1.0.0",
+  "description": "## Local Development Setup",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GetANicki/google-forms-automation.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GetANicki/google-forms-automation/issues"
+  },
+  "homepage": "https://github.com/GetANicki/google-forms-automation#readme",
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.45"
+  }
+}

@@ -1,0 +1,68 @@
+@apiKey = {{$optimorouteApiKey}}
+@baseUrl = https://api.optimoroute.com/v1
+
+@locationPrefix = TEST-
+@orderPrefix = TEST-
+@orderId = {{orderPrefix}}1
+
+### Get Order(s)
+GET {{baseUrl}}/get_orders?key={{apiKey}}&orderNo={{pickup.request.body.orderNo}}&orderNo={{pickup.request.body.orderNo}}_D
+
+### Create/Update Pickup
+# @name pickup
+@orderNo = {{orderPrefix}}_{{$datetime "YYYYMMDDHHMMss"}}
+POST {{baseUrl}}/create_order?key={{apiKey}}
+Content-Type: application/json
+
+{
+    "operation": "MERGE",
+    "orderNo": "{{orderNo}}",
+    "type": "P",
+    "date": "{{$datetime "YYYY-MM-DD"}}",
+    "location": {
+        "locationNo": "{{locationPrefix}}_P_CVS",
+        "locationName": "CVS N Oxford Valley Rd",
+        "address": "101 N Oxford Valley Rd, Yardley, PA 19067, USA",
+        "acceptPartialMatch": true,
+        "acceptMultipleResults": true
+    },
+    "duration": 10,
+    "notes": "Pickup RX# 1233232, T. User"
+}
+
+
+### Create/Update Delivery
+POST {{baseUrl}}/create_order?key={{apiKey}}
+Content-Type: application/json
+
+{
+    "operation": "MERGE",
+    "orderNo": "{{pickup.request.body.orderNo}}_D",
+    "relatedOrderNo": "{{pickup.request.body.orderNo}}",
+    "type": "D",
+    "date": "{{$datetime "YYYY-MM-DD"}}",
+    "location": {
+        "locationNo": "{{locationPrefix}}_C_TUSER_HOME",
+        "locationName": "Test User - Home",
+        "address": "1087 Country Hills Rd, Yardley, PA 19067, USA",
+        "acceptPartialMatch": true,
+        "acceptMultipleResults": true
+    },
+    "duration": 2,
+    "notes": "Deliver at the side door and knock three times"
+}   
+
+### Delete Orders
+POST {{baseUrl}}/delete_orders?key={{apiKey}}
+Content-Type: application/json
+
+{
+  "orders": [
+    {
+      "orderNo": "{{pickup.request.body.orderNo}}"
+    },
+    {
+      "orderNo": "{{pickup.request.body.orderNo}}_D"
+    }
+  ]
+}
