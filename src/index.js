@@ -1,5 +1,12 @@
-import './server/mail';
-import './server/menu';
-import './server/webapp';
+import getEmailAddresses from './email'
 
-/* Written by Amit Agarwal */
+global.getEmailAddresses = getEmailAddresses
+
+global.doGet = (e) => {
+    const text = '<b>I love Google</b>'
+    const output = HtmlService.createHtmlOutput(text)
+    output.setTitle(text)
+    output.addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    return output
+}
