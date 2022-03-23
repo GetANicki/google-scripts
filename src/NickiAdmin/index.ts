@@ -1,4 +1,5 @@
 export function showOrderSidebar() {
-    var html = HtmlService.createHtmlOutputFromFile("orders").setTitle("Nicki Orders");
-    SpreadsheetApp.getUi().showSidebar(html);
+  const html =
+    HtmlService.createHtmlOutputFromFile("orders").setTitle("Nicki Orders");
+  SpreadsheetApp.getUi().showSidebar(html);
 }

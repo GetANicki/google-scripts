@@ -1,13 +1,17 @@
-import { StripeApiKey } from "./secrets"
+import { StripeApiKey } from "./secrets";
 import { Customer, Product, Subscription } from "./types";
 import { addQuery } from "./util";
 
 export const getProducts = (): Product[] =>
   stripeGetAll("/products", { limit: 100, active: true });
 
-export const getSubscriptions = (): Subscription[] => stripeGetAll("/subscriptions", { limit: 100 });
+export const getSubscriptions = (): Subscription[] =>
+  stripeGetAll("/subscriptions", { limit: 100 });
 
-export const getCustomers = (products: Product[], subscriptions: Subscription[]): Customer[] =>
+export const getCustomers = (
+  products: Product[],
+  subscriptions: Subscription[]
+): Customer[] =>
   stripeGetAll("/customers", { limit: 100 })
     .map((customer) => mapCustomer(customer, subscriptions, products))
     .sort((x, y) => (x.displayName! > y.displayName! ? 1 : -1));
@@ -18,7 +22,11 @@ export const getCustomers = (products: Product[], subscriptions: Subscription[])
  * @param {Subscription[]} subscriptions all available subscriptions
  * @returns {Customer}
  */
-const mapCustomer = (customer: Customer, products: Product[], subscriptions: Subscription[]): Customer => {
+const mapCustomer = (
+  customer: Customer,
+  products: Product[],
+  subscriptions: Subscription[]
+): Customer => {
   const mySubscriptions = subscriptions?.filter(
     (sub) => sub.customer === customer.id && sub.plan?.active === true
   );
@@ -52,30 +60,30 @@ const mapCustomer = (customer: Customer, products: Product[], subscriptions: Sub
 const onelineAddress = (address) =>
   address
     ? [
-      `${address.line1} ${address.line2}`.trim(),
-      address.city,
-      address.state,
-      address.postal_code,
-      address.country,
-    ].join(", ")
+        `${address.line1} ${address.line2}`.trim(),
+        address.city,
+        address.state,
+        address.postal_code,
+        address.country,
+      ].join(", ")
     : null;
 
 /**
  * Retrieves data from the Stripe API,
  * including fetching additional paged items
  *
- * @param {string} path Stripe API path
- * @param {string[]=} query optional query parameters
+ * @param path Stripe API path
+ * @param query optional query parameters
  * @returns
  */
-function stripeGetAll(path, query) {
+function stripeGetAll(path: string, query?: Record<string, any>) {
   let items: any[] = [];
 
   let getMore = true;
   let lastId = null;
 
   do {
-    let params = {
+    const params = {
       ...query,
     };
 
@@ -83,9 +91,9 @@ function stripeGetAll(path, query) {
       params.starting_after = lastId;
     }
 
-    let url = addQuery(`https://api.stripe.com/v1${path}`, params);
+    const url = addQuery(`https://api.stripe.com/v1${path}`, params);
 
-    console.log("Retrieving ", url);
+    Logger.log("Retrieving ", url);
 
     const response = UrlFetchApp.fetch(url, {
       headers: {
@@ -103,4 +111,3 @@ function stripeGetAll(path, query) {
 
   return items;
 }
-

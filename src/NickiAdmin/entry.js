@@ -1,6 +1,6 @@
 function onOpen() {
-    SpreadsheetApp.getUi()
-        .createMenu("nickiAdmin")
-        .addItem("Order Management", "Nicki.showOrderSidebar")
-        .addToUi();
+  SpreadsheetApp.getUi()
+    .createMenu("nickiAdmin")
+    .addItem("Order Management", "Nicki.showOrderSidebar")
+    .addToUi();
 }

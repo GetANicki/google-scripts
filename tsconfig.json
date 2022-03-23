@@ -9,7 +9,8 @@
     "lib": ["es6"],
     "strict": true,
     "noImplicitAny": false,
-    "sourceMap": true
+    "sourceMap": true,
+    "rootDir": "./src"
   },
   "include": ["./src/**/*.ts"]
 }
