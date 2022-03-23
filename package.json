@@ -2,10 +2,7 @@
   "name": "google-forms-automation",
   "version": "1.0.0",
   "description": "## Local Development Setup",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GetANicki/google-forms-automation.git"
@@ -16,7 +13,31 @@
     "url": "https://github.com/GetANicki/google-forms-automation/issues"
   },
   "homepage": "https://github.com/GetANicki/google-forms-automation#readme",
+  "engines": {
+    "node": ">= 12"
+  },
+  "scripts": {
+    "build": "run-s clean build:webpack",
+    "build:webpack": "webpack --mode=none",
+    "clean": "rimraf dist",
+    "compile": "tsc -p . --noEmit",
+    "deploy": "run-s build deploy:*",
+    "deploy:projects": "cd dist && forfo 'clasp push -f'",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fix-broken-types": "sed -i '' -e 's|declare var console: Google|//|' node_modules/@types/google-apps-script/google-apps-script.base.d.ts ",
+    "postinstall": "npm run fix-broken-types"
+  },
   "devDependencies": {
-    "@types/google-apps-script": "^1.0.45"
+    "@types/google-apps-script": "^1.0.45",
+    "@types/node": "^17.0.22",
+    "clasp": "^1.0.0",
+    "copy-webpack-plugin": "^10.2.4",
+    "foreach-folder": "^1.1.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.8",
+    "typescript": "^4.6.2",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
   }
 }
