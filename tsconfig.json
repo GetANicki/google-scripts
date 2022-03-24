@@ -3,6 +3,7 @@
     "target": "ESNEXT",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "module": "CommonJS",
     "moduleResolution": "node",

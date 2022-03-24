@@ -1,3 +1,5 @@
+import { Address } from "./types";
+
 export const addQuery = (source: string, params: object): string =>
   Object.keys(params).reduce(
     (p, e, i) =>
@@ -9,8 +11,21 @@ export const addQuery = (source: string, params: object): string =>
               `${str + e}=${encodeURIComponent(f)}${
                 j !== params[e].length - 1 ? "&" : ""
               }`,
-            ""
+            "",
           )
         : `${e}=${encodeURIComponent(params[e])}`),
-    source
+    source,
   );
+
+export const onelineAddress = (
+  address: Address | null | undefined,
+): string | null =>
+  address
+    ? [
+        `${address.line1} ${address.line2}`.trim(),
+        address.city,
+        address.state,
+        address.postal_code,
+        address.country,
+      ].join(", ")
+    : null;

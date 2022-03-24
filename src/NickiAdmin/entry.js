@@ -1,6 +1,9 @@
+function smokeTest() {
+  // TODO
+}
+
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu("nickiAdmin")
-    .addItem("Order Management", "Nicki.showOrderSidebar")
-    .addToUi();
+  const menu = SpreadsheetApp.getUi().createMenu("nickiAdmin");
+  Nicki.menuItems.forEach((item) => menu.addItem(item.name, item.function));
+  menu.addToUi();
 }

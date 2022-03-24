@@ -1,6 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
+const Dotenv = require("dotenv-webpack");
 
 const Projects = ["NickiAdmin", "NickiOrderForm"];
 
@@ -10,7 +11,7 @@ module.exports = {
       ...entries,
       [projectName]: `./src/${projectName}/index.ts`,
     }),
-    {}
+    {},
   ),
   devtool: false,
   resolve: {
@@ -38,6 +39,7 @@ module.exports = {
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
+    new Dotenv(),
     new CopyPlugin({
       patterns: [
         { from: `*/.clasp.json`, context: "src/" },

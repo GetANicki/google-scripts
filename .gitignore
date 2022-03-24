@@ -105,3 +105,6 @@ dist
 
 
 *secrets*
+
+*.local
+.env
