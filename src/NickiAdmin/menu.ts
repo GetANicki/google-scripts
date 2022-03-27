@@ -1,3 +1,5 @@
+import { OrderManagementViewModel } from "./ordersManagementSidebar";
+
 export function menu_ShowOrderSidebar() {
   const html =
     HtmlService.createHtmlOutputFromFile("orders").setTitle("Nicki Orders");
@@ -5,7 +7,12 @@ export function menu_ShowOrderSidebar() {
 }
 
 export function menu_ManageDrivers() {
-  const html =
-    HtmlService.createHtmlOutputFromFile("orders").setTitle("Nicki Orders");
+  const model = new OrderManagementViewModel();
+  model.init();
+
+  const t = HtmlService.createTemplateFromFile("orders");
+  t.model = model;
+
+  const html = t.evaluate().setTitle("Nicki Orders");
   SpreadsheetApp.getUi().showSidebar(html);
 }

@@ -11,13 +11,11 @@
 
 <div class="sidebar branding-below">
   <div class="block form-group">
-    <label for="translated-text"> <b>Translation</b></label>
-    <textarea id="translated-text" rows="15"> </textarea>
-  </div>
-
-  <div class="block">
-    <input type="checkbox" id="save-prefs" />
-    <label for="save-prefs"> Use these languages by default</label>
+    <label for="translated-text">
+      <b>Customer Count:</b>
+      <?= model.customers.length ?></label
+    >
+    <input type="text" disabled value="" />
   </div>
 
   <div class="block">
@@ -27,5 +25,5 @@
 </div>
 
 <div class="sidebar bottom">
-  <button onclick="google.script.host.close()">Close Sidebar</button>
+  <button onclick="model.closeSidebar()">Close Sidebar</button>
 </div>

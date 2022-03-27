@@ -81,3 +81,35 @@ export interface OrderFormEntry {
   dropOffComments: string;
   nicki: string;
 }
+
+/**
+ * the column names from the Order Entry spreadsheet
+ */
+export type OrderEntryColumn = typeof OrderEntryColumns[number];
+
+/**
+ * the column names from the Order Entry spreadsheet
+ */
+export const OrderEntryColumns = [
+  "Order ID",
+  "Customer ID",
+  "Nicki ID",
+  "Service ID",
+  "Created",
+  "Created By",
+  "Timestamp",
+  "Status",
+  "Customer",
+  "Service",
+  "Pickup Location",
+  "Pickup Comments",
+  "Drop-Off Location",
+  "Drop-Off Comments",
+  "Nicki",
+  "Shopping Total",
+  "Transaction",
+  "Surcharge",
+  "Service Price",
+  "Nicki Gross",
+  "Nicki Net",
+] as const;
