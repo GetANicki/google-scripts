@@ -1,3 +1,5 @@
+import { CamelCase } from "type-fest";
+
 export interface Address {
   line1: string;
   line2: string | null;
@@ -49,7 +51,7 @@ export interface Customer {
   displayName?: string;
   phone?: string;
   email?: string;
-  address?: string;
+  address?: Address;
 }
 
 export interface Driver {
@@ -60,6 +62,7 @@ export interface Driver {
 
 export const OrderStatuses = [
   "Draft",
+  "Confirmed",
   "Scheduled",
   "Delivered",
   "Invoiced",
@@ -68,19 +71,14 @@ export const OrderStatuses = [
 
 export type OrderStatus = typeof OrderStatuses[number];
 
-export interface OrderFormEntry {
-  orderId: string;
-  customerId: string;
-  nickiId: string;
+export type OrderFormEntry = Omit<
+  {
+    [T in CamelCase<OrderEntryColumn>]: string;
+  },
+  "timestamp"
+> & {
   timestamp: Date;
-  customer: string;
-  service: string;
-  pickupLocation: string;
-  pickupComments: string;
-  dropOffLocation: string;
-  dropOffComments: string;
-  nicki: string;
-}
+};
 
 /**
  * the column names from the Order Entry spreadsheet
@@ -101,10 +99,15 @@ export const OrderEntryColumns = [
   "Status",
   "Customer",
   "Service",
+  "Pickup Date",
   "Pickup Location",
   "Pickup Comments",
-  "Drop-Off Location",
-  "Drop-Off Comments",
+  "Pickup Link",
+  "Pickup Duration",
+  "Drop-off Location",
+  "Drop-off Phone Number",
+  "Drop-off Comments",
+  "Drop-off Duration",
   "Nicki",
   "Shopping Total",
   "Transaction",

@@ -1,4 +1,4 @@
-@apiKey = {{$optimorouteApiKey}}
+@apiKey = {{optimorouteApiKey}}
 @baseUrl = https://api.optimoroute.com/v1
 
 @locationPrefix = TEST-
@@ -7,6 +7,13 @@
 
 ### Get Order(s)
 GET {{baseUrl}}/get_orders?key={{apiKey}}&orderNo={{pickup.request.body.orderNo}}&orderNo={{pickup.request.body.orderNo}}_D
+
+### Get Scheduling Info
+GET {{baseUrl}}/get_scheduling_info?key={{apiKey}}&orderNo=TESTErika1
+
+### Get Routes
+GET {{baseUrl}}/get_routes?key={{apiKey}}&date={{$datetime "YYYY-MM-DD"}}
+
 
 ### Create/Update Pickup
 # @name pickup

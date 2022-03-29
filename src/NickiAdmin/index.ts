@@ -1,3 +1,4 @@
+export { onEdit } from "./onEdit";
 export { onFormSubmit } from "./onFormSubmit";
 
 // Menu exports

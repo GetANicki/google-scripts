@@ -53,3 +53,9 @@ export const updateListField = (
 
   console.log(`Updated field ${title}:\r\n\t`, values.join("\r\n\t"));
 };
+
+export function formatAsCurrency(
+  ...ranges: GoogleAppsScript.Spreadsheet.Range[]
+) {
+  ranges.forEach((x) => x.setNumberFormat("$#,##0.00;$(#,##0.00)"));
+}

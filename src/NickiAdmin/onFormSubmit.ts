@@ -1,4 +1,8 @@
+import { getCustomerById } from "../services/customers";
+import { formatAsCurrency } from "../shared/googleExt";
+import { RowEditor } from "../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus, OrderStatuses } from "../shared/types";
+import { onelineAddress } from "../shared/util";
 
 const LockedColumns: OrderEntryColumn[] = [
   "Created",
@@ -22,9 +26,9 @@ export function onFormSubmit({
   namedValues: Record<OrderEntryColumn, string>;
 }) {
   console.log("Processing form submission for row ", range.getRowIndex());
-  const editor = new RowEditor(range);
+  const editor = new RowEditor<OrderEntryColumn>(range);
 
-  unlockCalculatedCells(editor);
+  editor.unlockCells();
 
   try {
     const timestamp = Date.now();
@@ -42,15 +46,22 @@ export function onFormSubmit({
       editor.set("Status", "Draft" as OrderStatus);
     }
 
-    const customerId = extractId(namedValues["Customer"]);
+    // try to get the customer ID from the form values, if initial submission
+    let customerId = extractId(namedValues["Customer"]);
     if (customerId) {
-      const orderId = `${customerId}_${timestamp}`;
-      editor.set("Order ID", orderId);
       editor.set("Customer ID", customerId);
       editor.set(
         "Customer",
         editor.get("Customer")?.replace(` (${customerId})`, ""),
       );
+    }
+    // otherwise get from the form
+    else {
+      customerId = editor.get("Customer ID");
+
+      if (!customerId) {
+        throw "Expected Customer ID but none existed - ABORTING";
+      }
     }
 
     const serviceId = extractId(namedValues["Service"]);
@@ -72,6 +83,9 @@ export function onFormSubmit({
       .requireValueInList([...OrderStatuses])
       .build();
     editor.getCell("Status").setDataValidation(statusValidation);
+
+    // populate customer info
+    populateCustomerInfo(editor);
 
     // set formulas in calculated fields
     const transactionCell = editor.getCell("Transaction");
@@ -98,47 +112,40 @@ export function onFormSubmit({
   } finally {
   }
 
-  lockCalculatedCells(editor, LockedColumns);
+  editor.lockCells(LockedColumns);
 }
 
-function formatAsCurrency(...ranges: GoogleAppsScript.Spreadsheet.Range[]) {
-  ranges.forEach((x) => x.setNumberFormat("$#,##0.00;$(#,##0.00)"));
-}
+function populateCustomerInfo(editor: RowEditor<OrderEntryColumn>) {
+  const customerId = editor.get("Customer ID");
 
-function lockCalculatedCells(
-  editor: RowEditor,
-  columnNames: OrderEntryColumn[],
-) {
-  columnNames.forEach((column) =>
-    editor.getCell(column).protect().setDescription("Auto-Calculated value"),
-  );
-}
-function unlockCalculatedCells(_editor: RowEditor) {
-  SpreadsheetApp.getActive()
-    .getProtections(SpreadsheetApp.ProtectionType.RANGE)
-    .forEach((x) => x.remove());
-}
+  console.log(`Getting info for customer ${customerId}...`);
+  const customer = getCustomerById(customerId);
 
-class RowEditor {
-  private rowIndex: number;
-  private sheet: GoogleAppsScript.Spreadsheet.Sheet;
-  private headers: OrderEntryColumn[];
-
-  constructor(range: GoogleAppsScript.Spreadsheet.Range) {
-    this.rowIndex = range.getRowIndex();
-    this.sheet = range.getSheet();
-    this.headers = this.sheet.getRange("1:1").getValues()[0];
+  if (!customer) {
+    console.log(`Unable to find customer ${customerId} - ABORTING`);
+    return;
   }
 
-  getCell = (column: OrderEntryColumn) =>
-    this.sheet.getRange(this.rowIndex, this.headers.indexOf(column) + 1);
+  if (customer.phone) {
+    editor.set("Drop-off Phone Number", customer.phone);
+  }
 
-  get = (column: OrderEntryColumn) => this.getCell(column)?.getValue();
+  // Replace "Home" address with actual address
+  const address = onelineAddress(customer.address);
+  if (address) {
+    console.log(`Customer ${customerId} has address on file`);
 
-  set = (column: OrderEntryColumn, value: any) => {
-    this.getCell(column).setValue(value);
-    console.log(`Set ${column}: `, value);
-  };
+    if (editor.get("Pickup Location").toLocaleLowerCase().trim() === "home") {
+      editor.set("Pickup Location", address);
+    }
+    if (editor.get("Drop-off Location").toLocaleLowerCase().trim() === "home") {
+      editor.set("Drop-off Location", address);
+    }
+  } else {
+    console.log(
+      `Customer ${customerId} does not have an address on file - skipping address population`,
+    );
+  }
 }
 
 // extracts an id from a name in "<Name> (<Id>)" format

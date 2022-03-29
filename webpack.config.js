@@ -13,7 +13,7 @@ module.exports = {
     }),
     {},
   ),
-  devtool: false,
+  devtool: "source-map",
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
   },

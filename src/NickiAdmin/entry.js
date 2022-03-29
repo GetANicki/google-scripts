@@ -7,3 +7,7 @@ function onOpen() {
 function onFormSubmit(e) {
   Nicki.onFormSubmit(e);
 }
+
+function handleEdit(e) {
+  Nicki.onEdit(e);
+}

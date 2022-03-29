@@ -26,6 +26,10 @@ export const getActivePlan = (
   return myProducts?.find((x) => x) || null;
 };
 
+export function get<T>(path: string, query?: Record<string, any>): T | null {
+  return fetch<T>(path, query);
+}
+
 /**
  * Retrieves data from the Stripe API,
  * including fetching additional paged items
@@ -34,11 +38,13 @@ export const getActivePlan = (
  * @param query optional query parameters
  * @returns
  */
-export function getAll(path: string, query?: Record<string, any>) {
-  let items: any[] = [];
-
+export function getAll<T extends { id: string }>(
+  path: string,
+  query?: Record<string, any>,
+): T[] {
+  let items: T[] = [];
   let getMore = true;
-  let lastId = null;
+  let lastId: string | null | undefined = null;
 
   do {
     const params = {
@@ -49,23 +55,30 @@ export function getAll(path: string, query?: Record<string, any>) {
       params.starting_after = lastId;
     }
 
-    const url = addQuery(`https://api.stripe.com/v1${path}`, params);
+    const { data, has_more } = fetch<{ data: T[]; has_more: boolean }>(
+      path,
+      params,
+    );
 
-    Logger.log("Retrieving ", url);
-
-    const response = UrlFetchApp.fetch(url, {
-      headers: {
-        Authorization: `Bearer ${config.StripeApiKey}`,
-      },
-    }).getContentText();
-
-    const { data, has_more } = JSON.parse(response);
-
-    items = [...items, ...data];
+    items = [...(items || []), ...(data || [])];
 
     getMore = has_more;
-    lastId = data.reverse().find((x) => x).id;
+    lastId = data?.reverse()?.find((x: T) => x)?.id;
   } while (getMore);
 
   return items;
 }
+
+const fetch = <T>(path: string, params): T => {
+  const url = addQuery(`https://api.stripe.com/v1${path}`, params || {});
+
+  console.log(`FETCH: ${url}...`);
+
+  const response = UrlFetchApp.fetch(url, {
+    headers: {
+      Authorization: `Bearer ${config.StripeApiKey}`,
+    },
+  }).getContentText();
+
+  return JSON.parse(response || "");
+};

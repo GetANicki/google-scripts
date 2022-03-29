@@ -1,5 +1,6 @@
-@apiKey = {{$stripeApiKey}}
-@testCustomerId = cus_LHejWZ80NfdZkb
+@apiKey = {{stripeApiKey}}
+#@testCustomerId = cus_LHejWZ80NfdZkb
+@testCustomerId = cus_LLOkMjkqbYnhCP
 
 
 ### Get customers
