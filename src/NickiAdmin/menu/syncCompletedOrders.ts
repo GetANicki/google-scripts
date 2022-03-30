@@ -4,7 +4,6 @@ import {
   OptimoRouteFile,
 } from "../../services/optimoroute";
 import { getOrderEditor, getOrders } from "../../services/orders";
-import { RowEditor } from "../../shared/RowEditor";
 import { OrderFormEntry, OrderStatus } from "../../shared/types";
 
 const OrderStatusesToSync: OrderStatus[] = ["Scheduled", "Delivered"];
@@ -20,7 +19,7 @@ export const syncCompletedOrders = () => {
   }
 
   const completedOrders = getCompletedOrderDetails(
-    ordersToSync.map((x) => x.orderId),
+    ordersToSync.map((x) => `${x.orderId}_D`),
   );
 
   console.log(
@@ -30,14 +29,13 @@ export const syncCompletedOrders = () => {
   );
 
   for (const detail of completedOrders) {
-    const order = ordersToSync.find(
-      (x) => x.orderId.trim() === detail.orderNo.trim(),
-    );
+    const orderId = detail.orderNo.trim().replace(/_D$/, "");
+    const order = ordersToSync.find((x) => x.orderId.trim() === orderId);
 
     if (order) {
       syncCompletedOrder(detail, order);
     } else {
-      console.log(`Unable to find order ${detail.orderNo}`);
+      console.log(`Unable to find order ${orderId}`);
       return;
     }
   }
