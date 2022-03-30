@@ -1,11 +1,14 @@
-import { OrderEntryColumn, OrderStatus } from "../shared/types";
 import { RowEditor } from "../shared/RowEditor";
+import { OrderEntryColumn } from "../shared/types";
 import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
 
 const handlers = [orderStatusHandler];
 
 export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
-  const editor = new RowEditor<OrderEntryColumn>(evt.range);
+  const editor = new RowEditor<OrderEntryColumn>(
+    evt.range.getSheet(),
+    evt.range.getRowIndex(),
+  );
   const columnName = editor.getColumnName(evt.range);
   const sheetName = evt.range.getSheet().getName();
   const columnIndex = evt.range.getColumn();

@@ -6,14 +6,26 @@
 @orderId = {{orderPrefix}}1
 
 ### Get Order(s)
-GET {{baseUrl}}/get_orders?key={{apiKey}}&orderNo={{pickup.request.body.orderNo}}&orderNo={{pickup.request.body.orderNo}}_D
+GET {{baseUrl}}/get_orders?key={{apiKey}}&orderNo=TESTGoodThrift
 
 ### Get Scheduling Info
-GET {{baseUrl}}/get_scheduling_info?key={{apiKey}}&orderNo=TESTErika1
+GET {{baseUrl}}/get_scheduling_info?key={{apiKey}}&orderNo=TESTGoodThrift
 
 ### Get Routes
-GET {{baseUrl}}/get_routes?key={{apiKey}}&date={{$datetime "YYYY-MM-DD"}}
+GET {{baseUrl}}/get_routes?key={{apiKey}}&date=2022-3-29
 
+
+### Get Completed Order Details
+POST {{baseUrl}}/get_completion_details?key={{apiKey}}
+Content-Type: application/json
+
+{"orders":[{"orderNo":"LJsdAmm3MHrzi_202203301"}, {"orderNo":"LJsdAmm3MHrzi_202203301_D"}]}
+
+### GET image
+GET https://d3nx4clzu40v0h.cloudfront.net/wwoU/bf28e366521f42eeb6c54b77fe50417d?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6XC9cL2Qzbng0Y2x6dTQwdjBoLmNsb3VkZnJvbnQubmV0XC93d29VXC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjQ5MTkwNTAzfX19XX0_&Signature=c-Ek3N6XVSZkXULugrAHxu0EzdyxW7a9T-vltzGUxj6DFq3tOh0UODVbHxtvyv9NSLuuy4k-nCUN59AnTBPpox40fFj4xWOes~nzNvd48gKpCMlAOPu4-M74hIOVx7rhbyQ7ZlIglPaSfluAyQGQe7wglnzq1a~vbn2p6isEZVyPDen~WzHzyCsiRcAq19-aZ0GhrI3mRDx8dLEpkE65x6c6QLJY4~QgHY8lgg2iVPaApDCLb35rp5F2eoOG60TSOd5Is8NdccRSpXlUYFGWNozr0AuMfzVRE-HhRTMwY6m01sFE9WRhX-ABbK9z-qIa1tONu4zODhYlLyW46~43tA__&Key-Pair-Id=K2P3F4LEIG7IN6
+
+###
+GET https:\/\/order.is\/4587kc6h
 
 ### Create/Update Pickup
 # @name pickup

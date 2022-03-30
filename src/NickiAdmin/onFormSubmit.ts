@@ -26,7 +26,10 @@ export function onFormSubmit({
   namedValues: Record<OrderEntryColumn, string>;
 }) {
   console.log("Processing form submission for row ", range.getRowIndex());
-  const editor = new RowEditor<OrderEntryColumn>(range);
+  const editor = new RowEditor<OrderEntryColumn>(
+    range.getSheet(),
+    range.getRowIndex(),
+  );
 
   editor.unlockCells();
 

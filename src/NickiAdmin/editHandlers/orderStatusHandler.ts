@@ -4,7 +4,10 @@ import { RowEditor } from "../../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus } from "../../shared/types";
 
 export function orderStatusHandler(evt: GoogleAppsScript.Events.SheetsOnEdit) {
-  const editor = new RowEditor<OrderEntryColumn>(evt.range);
+  const editor = new RowEditor<OrderEntryColumn>(
+    evt.range.getSheet(),
+    evt.range.getRowIndex(),
+  );
 
   if (
     evt.range.getSheet().getName() !== config.OrdersSheetName ||
@@ -33,6 +36,8 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
 
   const date = editor.get<Date>("Pickup Date");
 
+  console.log("Attachment", JSON.stringify(editor.get("Attachment")));
+
   upsertOrder(
     orderId,
     {
@@ -41,6 +46,8 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
       duration: editor.get("Pickup Duration"),
       notes: editor.get("Pickup Comments"),
       link: editor.get("Pickup Link"),
+      customerName: editor.get("Customer"),
+      attachment: editor.get("Attachment"),
     },
     {
       date,
@@ -48,6 +55,7 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
       duration: editor.get("Drop-off Duration"),
       notes: editor.get("Drop-off Comments"),
       phone: editor.get("Drop-off Phone Number"),
+      customerName: editor.get("Customer"),
     },
   );
 

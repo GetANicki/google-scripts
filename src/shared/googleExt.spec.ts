@@ -29,6 +29,23 @@ describe("googleExt", () => {
       ]);
     });
 
+    it("should parse spreadsheet values with empty cells", () => {
+      const [headers, ...rows] = [
+        ["Order ID", "Status", "Notes"],
+        ["cus_LHejWZ80NfdZkb_1648581971144", "Scheduled", ""],
+      ];
+
+      const objects = parseSpreadsheetValues(headers, rows);
+
+      expect(objects).toMatchObject([
+        {
+          orderId: "cus_LHejWZ80NfdZkb_1648581971144",
+          status: "Scheduled",
+          notes: "",
+        },
+      ]);
+    });
+
     it("should parse headers properly", () => {
       expect(
         parseSpreadsheetValues(

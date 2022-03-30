@@ -45,7 +45,7 @@ module.exports = {
         { from: `*/.clasp.json`, context: "src/" },
         { from: `*/appsscript.json`, context: "src/" },
         { from: `*/entry.js`, context: "src/" },
-        { from: `*/*.html`, context: "src/" },
+        //{ from: `*/*.html`, context: "src/" },
       ],
     }),
   ],

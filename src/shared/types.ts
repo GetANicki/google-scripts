@@ -71,14 +71,23 @@ export const OrderStatuses = [
 
 export type OrderStatus = typeof OrderStatuses[number];
 
-export type OrderFormEntry = Omit<
-  {
-    [T in CamelCase<OrderEntryColumn>]: string;
-  },
-  "timestamp"
-> & {
+export interface OrderFormEntry {
+  row: number;
+  orderId: string;
+  status: OrderStatus;
+  customerId: string;
+  nickiId: string;
   timestamp: Date;
-};
+  customer: string;
+  service: string;
+  pickupDate: Date | null;
+  pickupLocation: string;
+  pickupComments: string;
+  dropOffLocation: string;
+  dropOffComments: string;
+  attachment: string;
+  nicki: string;
+}
 
 /**
  * the column names from the Order Entry spreadsheet
@@ -99,6 +108,7 @@ export const OrderEntryColumns = [
   "Status",
   "Customer",
   "Service",
+  "Attachment",
   "Pickup Date",
   "Pickup Location",
   "Pickup Comments",
@@ -108,6 +118,8 @@ export const OrderEntryColumns = [
   "Drop-off Phone Number",
   "Drop-off Comments",
   "Drop-off Duration",
+  "Delivered UTC",
+  "Receipt",
   "Nicki",
   "Shopping Total",
   "Transaction",

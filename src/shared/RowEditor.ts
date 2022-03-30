@@ -3,10 +3,16 @@ export class RowEditor<TColumnsType> {
   private sheet: GoogleAppsScript.Spreadsheet.Sheet;
   private headers: TColumnsType[];
 
-  constructor(range: GoogleAppsScript.Spreadsheet.Range) {
-    this.rowIndex = range.getRowIndex();
-    this.sheet = range.getSheet();
-    this.headers = this.sheet.getRange("1:1").getValues()[0];
+  constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number) {
+    this.rowIndex = rowIndex;
+    this.sheet = sheet;
+    this.headers = sheet.getRange("1:1").getValues()[0];
+  }
+
+  static createFromRange<TColumnsType>(
+    range: GoogleAppsScript.Spreadsheet.Range,
+  ): RowEditor<TColumnsType> {
+    return new RowEditor<TColumnsType>(range.getSheet(), range.getRowIndex());
   }
 
   get = <T = string>(column: TColumnsType): T =>

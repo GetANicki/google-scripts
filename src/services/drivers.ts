@@ -3,6 +3,9 @@ import { readSpreadsheet } from "../shared/googleExt";
 import { Driver } from "../shared/types";
 
 export const getDrivers = (): Driver[] => {
-  const ss = SpreadsheetApp.openByUrl(config.NickiDataSpreadsheetUrl);
-  return readSpreadsheet<Driver>(ss, config.NickiDriversSheetName);
+  return readSpreadsheet<Driver>(
+    SpreadsheetApp.openByUrl(config.NickiDataSpreadsheetUrl).getSheetByName(
+      config.NickiDriversSheetName,
+    )!,
+  );
 };

@@ -1,13 +1,12 @@
 import camelcase from "camelcase";
 
 export function readSpreadsheet<T>(
-  ss: GoogleAppsScript.Spreadsheet.Spreadsheet,
-  sheetName: string,
+  ss: GoogleAppsScript.Spreadsheet.Sheet,
 ): T[] {
-  const [headers, ...values] = ss
-    ?.getSheetByName(sheetName)
-    ?.getDataRange()
-    ?.getDisplayValues() || [[], []];
+  const [headers, ...values] = ss?.getDataRange()?.getDisplayValues() || [
+    [],
+    [],
+  ];
 
   return parseSpreadsheetValues<T>(headers, values);
 }
@@ -16,17 +15,19 @@ export function parseSpreadsheetValues<T>(
   headers: string[],
   rows: string[][],
 ): T[] {
-  return rows
-    .filter((x) => x.every((y) => !!y))
-    .map((row) =>
-      headers.reduce(
-        (obj, header) => ({
-          ...obj,
-          [camelcase(header)]: row[headers.indexOf(header)],
-        }),
-        {} as T,
-      ),
-    );
+  return (
+    rows
+      //.filter((x) => x.every((y) => !!y))
+      .map((row) =>
+        headers.reduce(
+          (obj, header) => ({
+            ...obj,
+            [camelcase(header)]: row[headers.indexOf(header)],
+          }),
+          {} as T,
+        ),
+      )
+  );
 }
 
 /**

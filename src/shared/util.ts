@@ -17,6 +17,9 @@ export const addQuery = (source: string, params: object): string =>
     source,
   );
 
+export const shortDate = (date: Date): string =>
+  `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+
 export const onelineAddress = (
   address: Address | null | undefined,
 ): string | null =>
