@@ -109,6 +109,7 @@ export const OrderEntryColumns = [
   "Customer",
   "Service",
   "Attachment",
+  "Picked Up UTC",
   "Pickup Date",
   "Pickup Location",
   "Pickup Comments",

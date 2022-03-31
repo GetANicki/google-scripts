@@ -11,5 +11,5 @@ function onOpen() {
 }
 
 function syncExternalData() {
-  Nicki.syncExternalData();
+  Nicki.syncExternalFormData(FormApp.getActiveForm());
 }

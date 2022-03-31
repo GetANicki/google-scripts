@@ -1,1 +1,1 @@
-export { syncExternalData } from "./syncExternalData";
+export { syncExternalFormData } from "../services/syncExternalFormData";

@@ -32,7 +32,8 @@ export function orderStatusHandler(evt: GoogleAppsScript.Events.SheetsOnEdit) {
 
 const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
   const orderId =
-    editor.get("Order ID") || `${editor.get("Customer ID")}_${Date.now()}`;
+    editor.get("Order ID") ||
+    `${editor.get("Customer ID").replace(/^cus_/, "")}_${Date.now()}`;
 
   const date = editor.get<Date>("Pickup Date");
 

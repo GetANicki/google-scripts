@@ -19,7 +19,8 @@ export const syncCompletedOrders = () => {
   }
 
   const completedOrders = getCompletedOrderDetails(
-    ordersToSync.map((x) => `${x.orderId}_D`),
+    // get both the pickup and delivery orders
+    ordersToSync.flatMap((x) => [x.orderId, `${x.orderId}_D`]),
   );
 
   console.log(
@@ -42,19 +43,26 @@ export const syncCompletedOrders = () => {
 };
 
 const syncCompletedOrder = (
-  { data }: CompletedOrderDetails,
+  { orderNo, data }: CompletedOrderDetails,
   order: OrderFormEntry,
 ) => {
+  const isDelivery = /_D$/.test(orderNo);
   const editor = getOrderEditor(order.row);
 
-  editor.set("Status", "Delivered" as OrderStatus);
-  editor.set("Delivered UTC", data?.endTime?.utcTime || "");
+  if (isDelivery) {
+    editor.set("Status", "Delivered" as OrderStatus);
+    editor.set("Delivered UTC", data?.endTime?.utcTime || "");
+  }
+  // otherwise it's pickup
+  else {
+    editor.set("Picked Up UTC", data?.endTime?.utcTime || "");
 
-  saveReceipts(editor, data?.form?.images || []);
+    saveReceipts(editor, data?.form?.images || []);
 
-  const deliveryNote = data?.form?.note;
-  if (/\$?[0-9.,]*/.test(deliveryNote || "")) {
-    editor.set("Transaction", deliveryNote);
+    const deliveryNote = data?.form?.note;
+    if (/\$?[0-9.,]*/.test(deliveryNote || "")) {
+      editor.set("Transaction", deliveryNote);
+    }
   }
 };
 
