@@ -30,6 +30,18 @@ export class RowEditor<TColumnsType> {
     console.log(`Set ${column}: `, value);
   };
 
+  setDate = (
+    column: TColumnsType,
+    value: Date,
+    opts?: Intl.DateTimeFormatOptions,
+  ): void =>
+    this.set(
+      column,
+      value
+        .toLocaleString("en-US", { ...opts, hour12: false })
+        .replace(",", ""),
+    );
+
   setFormula = (
     column: TColumnsType,
     formulaColumns: TColumnsType[],

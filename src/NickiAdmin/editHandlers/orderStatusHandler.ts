@@ -1,3 +1,4 @@
+import { getLocation, OtherLocationName } from "../../services/locations";
 import { upsertOrder } from "../../services/optimoroute";
 import config from "../../shared/config";
 import { RowEditor } from "../../shared/RowEditor";
@@ -37,13 +38,29 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
 
   const date = editor.get<Date>("Pickup Date");
 
-  console.log("Attachment", JSON.stringify(editor.get("Attachment")));
+  const pickupLocation = getLocation(
+    editor.get("Pickup Location"),
+    editor.get("Customer ID"),
+  );
+  const dropoffLocation = getLocation(
+    editor.get("Drop-off Location"),
+    editor.get("Customer ID"),
+  );
+
+  if (!pickupLocation)
+    throw Error(
+      "Invalid pickup location - please replace with valid location or address",
+    );
+  if (!dropoffLocation)
+    throw Error(
+      "Invalid drop-off location - please replace with valid location or address",
+    );
 
   upsertOrder(
     orderId,
     {
       date,
-      location: editor.get("Pickup Location"),
+      location: pickupLocation,
       duration: editor.get("Pickup Duration"),
       notes: editor.get("Pickup Comments"),
       link: editor.get("Pickup Link"),
@@ -52,7 +69,7 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
     },
     {
       date,
-      location: editor.get("Drop-off Location"),
+      location: dropoffLocation,
       duration: editor.get("Drop-off Duration"),
       notes: editor.get("Drop-off Comments"),
       phone: editor.get("Drop-off Phone Number"),

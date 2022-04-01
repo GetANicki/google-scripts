@@ -1,4 +1,5 @@
 const config = {
+  LocationsSheetName: "Locations",
   NickiDataSpreadsheetUrl: process.env.NICKIDATA_SPREADSHEET!,
   NickiDriversSheetName: "Nickis",
   OrderFormUrl: process.env.ORDER_FORM_URL!,

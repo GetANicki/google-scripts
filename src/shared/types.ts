@@ -107,6 +107,7 @@ export const OrderEntryColumns = [
   "Timestamp",
   "Status",
   "Customer",
+  "Membership",
   "Service",
   "Attachment",
   "Picked Up UTC",
@@ -115,10 +116,12 @@ export const OrderEntryColumns = [
   "Pickup Comments",
   "Pickup Link",
   "Pickup Duration",
+  "New Pickup Location",
   "Drop-off Location",
   "Drop-off Phone Number",
   "Drop-off Comments",
   "Drop-off Duration",
+  "New Drop-off Location",
   "Delivered UTC",
   "Receipt",
   "Nicki",
@@ -129,3 +132,11 @@ export const OrderEntryColumns = [
   "Nicki Gross",
   "Nicki Net",
 ] as const;
+
+export interface Location {
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  locationNo?: string;
+  locationName?: string;
+}

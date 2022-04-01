@@ -35,9 +35,9 @@ export function parseSpreadsheetValues<T>(
  * @param title
  * @param values the values to replace as the list values
  */
-export const updateListField = (
+export const updateListField = <TColumnName extends string = string>(
   form: GoogleAppsScript.Forms.Form,
-  title: string,
+  title: TColumnName,
   values: string[],
 ) => {
   const field = form

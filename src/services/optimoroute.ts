@@ -1,13 +1,10 @@
 import config from "../shared/config";
+import { Location } from "../shared/types";
 import { addQuery, shortDate } from "../shared/util";
 
 export interface OptimoRouteOrder {
   date: Date;
-  location: {
-    locationNo?: string;
-    locationName?: string;
-    address: string;
-  };
+  location: Location;
   duration?: number;
   notes?: string;
   phone?: string;
@@ -32,7 +29,7 @@ export const upsertOrder = (
   delivery: OptimoRouteOrder,
 ) => {
   // schedule pickup
-  fetch("/create_order", {
+  const pickupOrder = fetch("/create_order", {
     method: "post",
     payload: {
       operation: "MERGE",
@@ -40,9 +37,9 @@ export const upsertOrder = (
       type: "P",
       date: shortDate(pickup.date || new Date()),
       location: {
-        address: pickup.location,
-        acceptPartialMatch: true,
-        acceptMultipleResults: true,
+        ...pickup.location,
+        acceptPartialMatch: !pickup.location.latitude,
+        acceptMultipleResults: !pickup.location.latitude,
       },
       duration: (pickup.duration && +pickup.duration) || 5,
       notes: pickup.notes,
@@ -52,8 +49,10 @@ export const upsertOrder = (
     },
   });
 
+  console.log("Scheduled pickup: ", JSON.stringify(pickupOrder, null, 2));
+
   // schedule delivery (related to pickup)
-  fetch("/create_order", {
+  const deliveryOrder = fetch("/create_order", {
     method: "post",
     payload: {
       operation: "MERGE",
@@ -62,9 +61,9 @@ export const upsertOrder = (
       type: "D",
       date: shortDate(delivery.date || pickup.date || new Date()),
       location: {
-        address: delivery.location,
-        acceptPartialMatch: true,
-        acceptMultipleResults: true,
+        ...delivery.location,
+        acceptPartialMatch: !delivery.location.latitude,
+        acceptMultipleResults: !delivery.location.latitude,
       },
       duration: (delivery.duration && +delivery.duration) || 5,
       notes: delivery.notes,
@@ -73,6 +72,9 @@ export const upsertOrder = (
       customField4: delivery.customerName || pickup.customerName,
     },
   });
+  console.log("Scheduled delivery: ", JSON.stringify(deliveryOrder, null, 2));
+
+  // TODO: save location lat/longs if we don't already have them
 };
 
 export interface OptimoRouteFile {
