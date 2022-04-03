@@ -1,4 +1,4 @@
-export class RowEditor<TColumnsType> {
+export class RowEditor<TColumnsType extends string> {
   private rowIndex: number;
   private sheet: GoogleAppsScript.Spreadsheet.Sheet;
   private headers: TColumnsType[];
@@ -6,20 +6,20 @@ export class RowEditor<TColumnsType> {
   constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number) {
     this.rowIndex = rowIndex;
     this.sheet = sheet;
-    this.headers = sheet.getRange("1:1").getValues()[0];
-  }
-
-  static createFromRange<TColumnsType>(
-    range: GoogleAppsScript.Spreadsheet.Range,
-  ): RowEditor<TColumnsType> {
-    return new RowEditor<TColumnsType>(range.getSheet(), range.getRowIndex());
+    this.headers = sheet
+      .getRange("1:1")
+      .getValues()[0]
+      .map((x) => x.trim());
   }
 
   get = <T = string>(column: TColumnsType): T =>
     this.getCell(column)?.getValue();
 
   getCell = (column: TColumnsType) =>
-    this.sheet.getRange(this.rowIndex, this.headers.indexOf(column) + 1);
+    this.sheet.getRange(
+      this.rowIndex,
+      this.headers.indexOf(column.trim() as TColumnsType) + 1,
+    );
 
   getColumnName = (
     range: GoogleAppsScript.Spreadsheet.Range,
@@ -29,6 +29,18 @@ export class RowEditor<TColumnsType> {
     this.getCell(column).setValue(value);
     console.log(`Set ${column}: `, value);
   };
+
+  setDate = (
+    column: TColumnsType,
+    value: Date,
+    opts?: Intl.DateTimeFormatOptions,
+  ): void =>
+    this.set(
+      column,
+      value
+        .toLocaleString("en-US", { ...opts, hour12: false })
+        .replace(",", ""),
+    );
 
   setFormula = (
     column: TColumnsType,
@@ -51,5 +63,27 @@ export class RowEditor<TColumnsType> {
       .getProtections(SpreadsheetApp.ProtectionType.RANGE)
       .filter((x) => x.getRange().getRowIndex() === this.rowIndex)
       .forEach((x) => x.remove());
+  }
+
+  static createFromRange<TColumnsType extends string>(
+    range: GoogleAppsScript.Spreadsheet.Range,
+  ): RowEditor<TColumnsType> {
+    return new RowEditor<TColumnsType>(range.getSheet(), range.getRowIndex());
+  }
+
+  static findById<TColumnsType extends string>(
+    sheet: GoogleAppsScript.Spreadsheet.Sheet,
+    id: string,
+  ): RowEditor<TColumnsType> | null {
+    const locationNos = sheet
+      .getRange("A:A")
+      .getDisplayValues()
+      .flatMap((x) => x);
+
+    const rowIndex = locationNos.indexOf(id);
+
+    if (rowIndex === -1) return null;
+
+    return new RowEditor<TColumnsType>(sheet, rowIndex + 1);
   }
 }

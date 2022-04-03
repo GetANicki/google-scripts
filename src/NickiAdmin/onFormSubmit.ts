@@ -1,8 +1,8 @@
 import { getCustomerById } from "../services/customers";
+import { getLocation, OtherLocationName } from "../services/locations";
 import { formatAsCurrency } from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus, OrderStatuses } from "../shared/types";
-import { onelineAddress } from "../shared/util";
 
 const LockedColumns: OrderEntryColumn[] = [
   "Created",
@@ -26,6 +26,7 @@ export function onFormSubmit({
   namedValues: Record<OrderEntryColumn, string>;
 }) {
   console.log("Processing form submission for row ", range.getRowIndex());
+
   const editor = new RowEditor<OrderEntryColumn>(
     range.getSheet(),
     range.getRowIndex(),
@@ -35,27 +36,40 @@ export function onFormSubmit({
 
   try {
     const timestamp = Date.now();
+    const timestampDate = new Date(timestamp);
 
     if (!editor.get("Created")) {
-      editor.set(
-        "Created",
-        new Date(timestamp)
-          .toLocaleString("en-US", { hour12: false })
-          .replace(",", ""),
-      );
-
+      editor.setDate("Created", timestampDate);
       editor.set("Created By", Session.getActiveUser().getEmail());
-
       editor.set("Status", "Draft" as OrderStatus);
+    }
+
+    const pickupDate = editor.get("Pickup Date");
+    console.log("Pickup date", typeof pickupDate, pickupDate);
+    // default date to today if not specified
+    if (!!pickupDate) {
+      editor.setDate("Pickup Date", timestampDate, {
+        dateStyle: "short",
+      });
+      console.log("Pickup date not set - defaulting to today");
     }
 
     // try to get the customer ID from the form values, if initial submission
     let customerId = extractId(namedValues["Customer"]);
     if (customerId) {
+      const membership = /\[(.*?)\]/.exec(namedValues["Customer"])?.[1];
+      if (membership) {
+        editor.set("Membership", membership.trim());
+      }
+
       editor.set("Customer ID", customerId);
       editor.set(
         "Customer",
-        editor.get("Customer")?.replace(` (${customerId})`, ""),
+        editor
+          .get("Customer")
+          ?.replace(` (${customerId})`, "")
+          ?.replace(` [${membership}]`, "")
+          ?.trim(),
       );
     }
     // otherwise get from the form
@@ -67,18 +81,12 @@ export function onFormSubmit({
       }
     }
 
-    const serviceId = extractId(namedValues["Service"]);
-    if (serviceId) {
-      editor.set("Service ID", serviceId);
-      editor.set(
-        "Service",
-        editor.get("Service")?.replace(` (${serviceId})`, ""),
-      );
+    // copy the new locations if specified
+    if (editor.get("Drop-off Location").trim() === OtherLocationName) {
+      editor.set("Drop-off Location", namedValues["New Drop-off Location"]);
     }
-
-    const nickiId = extractId(namedValues["Nicki"]);
-    if (nickiId) {
-      editor.set("Nicki ID", nickiId);
+    if (editor.get("Pickup Location").trim() === OtherLocationName) {
+      editor.set("Pickup Location", namedValues["New Pickup Location"]);
     }
 
     // Set status filter
@@ -131,23 +139,6 @@ function populateCustomerInfo(editor: RowEditor<OrderEntryColumn>) {
 
   if (customer.phone) {
     editor.set("Drop-off Phone Number", customer.phone);
-  }
-
-  // Replace "Home" address with actual address
-  const address = onelineAddress(customer.address);
-  if (address) {
-    console.log(`Customer ${customerId} has address on file`);
-
-    if (editor.get("Pickup Location").toLocaleLowerCase().trim() === "home") {
-      editor.set("Pickup Location", address);
-    }
-    if (editor.get("Drop-off Location").toLocaleLowerCase().trim() === "home") {
-      editor.set("Drop-off Location", address);
-    }
-  } else {
-    console.log(
-      `Customer ${customerId} does not have an address on file - skipping address population`,
-    );
   }
 }
 

@@ -1,13 +1,11 @@
 import config from "../shared/config";
+import { Location } from "../shared/types";
 import { addQuery, shortDate } from "../shared/util";
+import { HomeLocationNoSuffix, saveLocation } from "./locations";
 
 export interface OptimoRouteOrder {
   date: Date;
-  location: {
-    locationNo?: string;
-    locationName?: string;
-    address: string;
-  };
+  location: Location;
   duration?: number;
   notes?: string;
   phone?: string;
@@ -26,13 +24,28 @@ export interface OptimoRouteRouteInfo {
   }[];
 }
 
+interface CreateRouteResponse {
+  location: {
+    locationName: string;
+    valid: boolean;
+    longitude: number;
+    address: string;
+    latitude: number;
+    checkInTime: number;
+    notes: string;
+    locationNo: string;
+  };
+  success: boolean;
+  mode: string;
+}
+
 export const upsertOrder = (
   orderNo: string,
   pickup: OptimoRouteOrder,
   delivery: OptimoRouteOrder,
 ) => {
   // schedule pickup
-  fetch("/create_order", {
+  const pickupOrder = fetch<CreateRouteResponse>("/create_order", {
     method: "post",
     payload: {
       operation: "MERGE",
@@ -40,9 +53,9 @@ export const upsertOrder = (
       type: "P",
       date: shortDate(pickup.date || new Date()),
       location: {
-        address: pickup.location,
-        acceptPartialMatch: true,
-        acceptMultipleResults: true,
+        ...sanitizeLocation(pickup.location),
+        acceptPartialMatch: !pickup.location.latitude,
+        acceptMultipleResults: !pickup.location.latitude,
       },
       duration: (pickup.duration && +pickup.duration) || 5,
       notes: pickup.notes,
@@ -52,8 +65,10 @@ export const upsertOrder = (
     },
   });
 
+  console.log("Scheduled pickup: ", JSON.stringify(pickupOrder, null, 2));
+
   // schedule delivery (related to pickup)
-  fetch("/create_order", {
+  const deliveryOrder = fetch<CreateRouteResponse>("/create_order", {
     method: "post",
     payload: {
       operation: "MERGE",
@@ -62,9 +77,9 @@ export const upsertOrder = (
       type: "D",
       date: shortDate(delivery.date || pickup.date || new Date()),
       location: {
-        address: delivery.location,
-        acceptPartialMatch: true,
-        acceptMultipleResults: true,
+        ...sanitizeLocation(delivery.location),
+        acceptPartialMatch: !delivery.location.latitude,
+        acceptMultipleResults: !delivery.location.latitude,
       },
       duration: (delivery.duration && +delivery.duration) || 5,
       notes: delivery.notes,
@@ -73,7 +88,31 @@ export const upsertOrder = (
       customField4: delivery.customerName || pickup.customerName,
     },
   });
+  console.log("Scheduled delivery: ", JSON.stringify(deliveryOrder, null, 2));
+
+  // save location (or update existing location with correct lat/long),
+  // but only if they are not home addresses
+  if (
+    !!pickupOrder.location?.locationNo &&
+    !pickupOrder.location.locationNo.endsWith(HomeLocationNoSuffix)
+  ) {
+    saveLocation(pickupOrder.location);
+  }
+
+  if (
+    !!deliveryOrder.location?.locationNo &&
+    !deliveryOrder.location.locationNo.endsWith(HomeLocationNoSuffix)
+  ) {
+    saveLocation(deliveryOrder.location);
+  }
 };
+
+// removes unset/invalid properties from location (e.g. empty lat/long)
+const sanitizeLocation = (location: Location) =>
+  Object.keys(location).reduce(
+    (acc, x) => (location[x] ? { ...acc, [x]: location[x] } : acc),
+    {},
+  );
 
 export interface OptimoRouteFile {
   url: string;
