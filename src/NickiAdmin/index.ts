@@ -25,3 +25,6 @@ export const menuItems: (
     function: "Nicki.menu_SyncExternalFormData",
   },
 ];
+
+// FOR TESTING:
+export { saveLocation, getLocation } from "../services/locations";

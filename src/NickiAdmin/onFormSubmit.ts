@@ -140,21 +140,6 @@ function populateCustomerInfo(editor: RowEditor<OrderEntryColumn>) {
   if (customer.phone) {
     editor.set("Drop-off Phone Number", customer.phone);
   }
-
-  const pickupLocation = getLocation(editor.get("Pickup Location"), customer);
-  editor.set(
-    "Pickup Location",
-    pickupLocation?.locationName || pickupLocation?.address,
-  );
-
-  const dropoffLocation = getLocation(
-    editor.get("Drop-off Location"),
-    customer,
-  );
-  editor.set(
-    "Drop-off Location",
-    dropoffLocation?.locationName || dropoffLocation?.address,
-  );
 }
 
 // extracts an id from a name in "<Name> (<Id>)" format

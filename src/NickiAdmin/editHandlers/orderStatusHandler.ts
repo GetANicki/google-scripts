@@ -1,4 +1,4 @@
-import { getLocation, OtherLocationName } from "../../services/locations";
+import { getLocation } from "../../services/locations";
 import { upsertOrder } from "../../services/optimoroute";
 import config from "../../shared/config";
 import { RowEditor } from "../../shared/RowEditor";
@@ -51,10 +51,12 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
     throw Error(
       "Invalid pickup location - please replace with valid location or address",
     );
+  else console.log(`Pickup location: ${JSON.stringify(pickupLocation)}`);
   if (!dropoffLocation)
     throw Error(
       "Invalid drop-off location - please replace with valid location or address",
     );
+  else console.log(`Drop-off location: ${JSON.stringify(dropoffLocation)}`);
 
   upsertOrder(
     orderId,
