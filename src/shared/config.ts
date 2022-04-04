@@ -1,4 +1,5 @@
 const config = {
+  FileStorageFolderId: process.env.SAVED_FILES_FOLDER_ID!,
   LocationsSheetName: "Locations",
   NickiDataSpreadsheetUrl: process.env.NICKIDATA_SPREADSHEET!,
   NickiDriversSheetName: "Nickis",

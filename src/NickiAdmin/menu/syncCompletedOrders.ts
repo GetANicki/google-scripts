@@ -1,5 +1,6 @@
+import { saveFile } from "../../services/files";
 import {
-  CompletedOrderDetails,
+  OptimoCompletedOrderDetails,
   getCompletedOrderDetails,
   OptimoRouteFile,
 } from "../../services/optimoroute";
@@ -43,7 +44,7 @@ export const syncCompletedOrders = () => {
 };
 
 const syncCompletedOrder = (
-  { orderNo, data }: CompletedOrderDetails,
+  { orderNo, data }: OptimoCompletedOrderDetails,
   order: OrderFormEntry,
 ) => {
   const isDelivery = /_D$/.test(orderNo);
@@ -68,23 +69,39 @@ const syncCompletedOrder = (
 
 const saveReceipts = (
   editor: ReturnType<typeof getOrderEditor>,
-  receiptUrls: OptimoRouteFile[],
+  receiptImages: OptimoRouteFile[],
 ) => {
-  // TODO: download to Google Drive and link to folder;
-  //       until then just log that we're saving only the first one
-  if (receiptUrls.length > 1) {
-    console.log(
-      `Found ${receiptUrls.length} receipt URLs - only getting first one`,
-    );
+  if (!receiptImages.length) {
+    console.log("No receipt images to save - skipping...");
+    return;
   }
 
-  if (receiptUrls.length) {
-    const linkText = "Receipt";
-    const link = SpreadsheetApp.newRichTextValue()
-      .setText(linkText)
-      .setLinkUrl(0, linkText.length, receiptUrls[0].url)
-      .build();
+  const folderName = editor.get("Order ID");
+  let folderUrl: string | null = null;
 
-    editor.getCell("Receipt").setRichTextValue(link);
+  for (const receipt of receiptImages) {
+    try {
+      const image = UrlFetchApp.fetch(receipt.url, { method: "get" }).getBlob();
+      console.log(`Downloaded ${receipt.url}`);
+      const savedImage = saveFile(folderName, image);
+      console.log(`Saved ${receipt.url} to ${savedImage.fileUrl}`);
+      folderUrl = folderUrl || savedImage.folderUrl;
+    } catch (ex) {
+      console.log(`Error saving ${receipt.url}: ${JSON.stringify(ex)}`);
+    }
+  }
+
+  if (folderUrl) {
+    const linkText = "Receipt(s)";
+    editor
+      .getCell("Receipt")
+      .setRichTextValue(
+        SpreadsheetApp.newRichTextValue()
+          .setText(linkText)
+          .setLinkUrl(0, linkText.length, folderUrl)
+          .build(),
+      );
+  } else {
+    editor.getCell("Receipt").setValue("ERROR");
   }
 };
