@@ -1,0 +1,61 @@
+name: Build and Deploy
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set variables
+        id: setvars
+        run: |
+          if [[ "${{github.base_ref}}" == "develop" || "${{github.ref}}" == "refs/heads/develop" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+            echo "CLASP_SCRIPT_ID=${{ secrets.DEV_CLASP_SCRIPT_ID }}" >> $GITHUB_ENV
+          fi
+
+          if [[ "${{github.base_ref}}" == "main" || "${{github.ref}}" == "refs/heads/main" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "CLASP_SCRIPT_ID=${{ secrets.PROD_CLASP_SCRIPT_ID }}" >> $GITHUB_ENV
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: |
+          npm run build:${{ env.ENV }}
+          rm "dist/NickiAdmin/.clasp.json"
+
+      - name: Test
+        run: npm test
+
+      - name: Deploy
+        run: echo "clasp push ${{ env.CLASP_SCRIPT_ID }}"
+      #   uses: daikikatsuragawa/clasp-action@v1.1.0
+      #   with:
+      #     accessToken: ${{ secrets.CLASP_ACCESS_TOKEN }}
+      #     idToken: ${{ secrets.CLASP_ID_TOKEN }}
+      #     refreshToken: ${{ secrets.CLASP_REFRESH_TOKEN }}
+      #     clientId: ${{ secrets.CLASP_CLIENT_ID }}
+      #     clientSecret: ${{ secrets.CLASP_CLIENT_SECRET }}
+      #     scriptId: ${{ env.CLASP_SCRIPT_ID }}
+      #     rootDir: "dist/NickiAdmin"
+      #     command: "push"

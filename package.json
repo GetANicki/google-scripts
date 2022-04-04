@@ -26,8 +26,8 @@
     "deploy:prod": "run-s build:prod update-prod-project-id deploy:NickiAdmin",
     "deploy:NickiAdmin": "cd dist/NickiAdmin && clasp push -f",
     "update-prod-project-id": "sed -i '' -e 's|1972_r7VW7xV1mkfWQh3GbTGjsgaduvzKOl0Z3-u4gkoWlHtQHGifhyj-|1bzVP1cnimW2fOz7Xo_j0165xqTFyZsP31puT0zIsi0lWkScqBflRUeQo|' dist/NickiAdmin/.clasp.json",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "fix-broken-types": "sed -i '' -e 's|declare var console: Google|//|' node_modules/@types/google-apps-script/google-apps-script.base.d.ts ",
+    "test": "echo \"No tests.  Success...?\"",
+    "fix-broken-types": "cd node_modules/@types/google-apps-script/ && sed -i.bak -e 's|declare var console: Google|//|' google-apps-script.base.d.ts && rm google-apps-script.base.d.ts.bak",
     "prepare": "husky install",
     "postinstall": "npm run fix-broken-types"
   },
