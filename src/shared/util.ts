@@ -17,8 +17,10 @@ export const addQuery = (source: string, params: object): string =>
     source,
   );
 
-export const shortDate = (date: Date): string =>
-  `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+export const shortDate = (date: Date | null): string | null =>
+  date
+    ? `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+    : null;
 
 export const onelineAddress = (
   address: Address | null | undefined,

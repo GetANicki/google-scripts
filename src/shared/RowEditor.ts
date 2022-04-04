@@ -10,6 +10,8 @@ export class RowEditor<TColumnsType extends string> {
       .getRange("1:1")
       .getValues()[0]
       .map((x) => x.trim());
+
+    console.log("Headers: ", JSON.stringify(this.headers));
   }
 
   get = <T = string>(column: TColumnsType): T =>

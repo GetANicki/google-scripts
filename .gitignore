@@ -107,4 +107,6 @@ dist
 *secrets*
 
 *.local
-.env
+.env*
+locations.csv
+locations.json

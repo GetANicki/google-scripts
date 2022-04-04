@@ -19,11 +19,5 @@ export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
     }, Old Value: ${evt.oldValue}`,
   );
 
-  console.log("Date: ", editor.get("Pickup Date"));
-  const date = editor.get<Date>("Pickup Date");
-  console.log(
-    `Day: ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
-  );
-
   handlers.forEach((handler) => handler(evt));
 }

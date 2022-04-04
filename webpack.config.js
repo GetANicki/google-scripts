@@ -5,6 +5,8 @@ const Dotenv = require("dotenv-webpack");
 
 const Projects = ["NickiAdmin", "NickiOrderForm"];
 
+console.log("ENV:", process.env.NODE_ENV);
+
 module.exports = {
   entry: Projects.reduce(
     (entries, projectName) => ({
@@ -39,7 +41,11 @@ module.exports = {
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
-    new Dotenv(),
+    new Dotenv({
+      path: `./.env.${
+        process.env.NODE_ENV === "production" ? "production" : "dev"
+      }`,
+    }),
     new CopyPlugin({
       patterns: [
         { from: `*/.clasp.json`, context: "src/" },
