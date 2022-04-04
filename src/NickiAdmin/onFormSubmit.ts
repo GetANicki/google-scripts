@@ -1,5 +1,5 @@
 import { getCustomerById } from "../services/customers";
-import { getLocation, OtherLocationName } from "../services/locations";
+import { OtherLocationName } from "../services/locations";
 import { formatAsCurrency } from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus, OrderStatuses } from "../shared/types";
@@ -47,10 +47,8 @@ export function onFormSubmit({
     const pickupDate = editor.get("Pickup Date");
     console.log("Pickup date", typeof pickupDate, pickupDate);
     // default date to today if not specified
-    if (!!pickupDate) {
-      editor.setDate("Pickup Date", timestampDate, {
-        dateStyle: "short",
-      });
+    if (!pickupDate) {
+      editor.setDate("Pickup Date", timestampDate);
       console.log("Pickup date not set - defaulting to today");
     }
 

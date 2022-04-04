@@ -3,6 +3,29 @@ import { Location } from "../shared/types";
 import { addQuery, shortDate } from "../shared/util";
 import { HomeLocationNoSuffix, saveLocation } from "./locations";
 
+export interface OptimoRouteFile {
+  url: string;
+  type: string;
+}
+export interface OptimoCompletedOrderDetails {
+  orderNo: string;
+  success: boolean;
+  data: {
+    status: "scheduled" | "success";
+    endTime?: {
+      utcTime: string;
+      utcTimestamp: number;
+      localTime: string;
+    };
+    form?: {
+      note?: string;
+      signature?: OptimoRouteFile;
+      images?: OptimoRouteFile[];
+    };
+    tracking_url?: string;
+  };
+}
+
 export interface OptimoRouteOrder {
   date: Date;
   location: Location;
@@ -14,7 +37,7 @@ export interface OptimoRouteOrder {
   attachment?: string;
 }
 
-export interface OptimoRouteRouteInfo {
+export interface OptimoRouteInfo {
   routes: {
     driverSerial: string;
     driverName: string;
@@ -24,7 +47,7 @@ export interface OptimoRouteRouteInfo {
   }[];
 }
 
-interface CreateRouteResponse {
+interface OptimoCreateRouteResponse {
   location: {
     locationName: string;
     valid: boolean;
@@ -45,7 +68,7 @@ export const upsertOrder = (
   delivery: OptimoRouteOrder,
 ) => {
   // schedule pickup
-  const pickupOrder = fetch<CreateRouteResponse>("/create_order", {
+  const pickupOrder = fetch<OptimoCreateRouteResponse>("/create_order", {
     method: "post",
     payload: {
       operation: "MERGE",
@@ -68,7 +91,7 @@ export const upsertOrder = (
   console.log("Scheduled pickup: ", JSON.stringify(pickupOrder, null, 2));
 
   // schedule delivery (related to pickup)
-  const deliveryOrder = fetch<CreateRouteResponse>("/create_order", {
+  const deliveryOrder = fetch<OptimoCreateRouteResponse>("/create_order", {
     method: "post",
     payload: {
       operation: "MERGE",
@@ -109,39 +132,16 @@ export const upsertOrder = (
 
 // removes unset/invalid properties from location (e.g. empty lat/long)
 const sanitizeLocation = (location: Location) =>
-  Object.keys(location).reduce(
-    (acc, x) => (location[x] ? { ...acc, [x]: location[x] } : acc),
-    {},
-  );
-
-export interface OptimoRouteFile {
-  url: string;
-  type: string;
-}
-export interface CompletedOrderDetails {
-  orderNo: string;
-  success: boolean;
-  data: {
-    status: "scheduled" | "success";
-    endTime?: {
-      utcTime: string;
-      utcTimestamp: number;
-      localTime: string;
-    };
-    form?: {
-      note?: string;
-      signature?: OptimoRouteFile;
-      images?: OptimoRouteFile[];
-    };
-    tracking_url?: string;
-  };
-}
+  Object.keys(location)
+    // exclude lat and long for now
+    .filter((x) => !["latitude", "longitude"].includes(x))
+    .reduce((acc, x) => (location[x] ? { ...acc, [x]: location[x] } : acc), {});
 
 export const getCompletedOrderDetails = (
   orderIds: string[],
-): CompletedOrderDetails[] =>
+): OptimoCompletedOrderDetails[] =>
   fetch<{
-    orders: CompletedOrderDetails[];
+    orders: OptimoCompletedOrderDetails[];
   }>("/get_completion_details", {
     method: "post",
     payload: {
@@ -150,7 +150,7 @@ export const getCompletedOrderDetails = (
   })?.orders.filter((x) => x.data?.status === "success");
 
 export const getRoutes = (date: Date) =>
-  fetch<OptimoRouteRouteInfo>("/get_routes", {
+  fetch<OptimoRouteInfo>("/get_routes", {
     params: { date: shortDate(date) },
     method: "get",
   });
