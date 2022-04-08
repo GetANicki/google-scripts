@@ -16,9 +16,11 @@ const updateLocationsField = (
   locations: Location[],
 ) => {
   const locationNames = [
-    NewLocationName,
-    HomeLocationName,
-    ...locations.map((x) => x.locationName as string).filter((x) => !!x),
+    ...new Set([
+      NewLocationName,
+      HomeLocationName,
+      ...locations.map((x) => x.locationName as string).filter((x) => !!x),
+    ]),
   ];
 
   updateListField<OrderEntryColumn>(form, "Pickup Location", locationNames);
