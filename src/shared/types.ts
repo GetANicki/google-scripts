@@ -143,7 +143,12 @@ export interface Location {
 /**
  * Auditing and logging
  */
-export const AuditEntryTypes = ["Error", "Message", "Change"] as const;
+export const AuditEntryTypes = [
+  "Error",
+  "Message",
+  "Notification",
+  "Change",
+] as const;
 export type AuditEntryType = typeof AuditEntryTypes[number];
 
 export interface AuditEntry {
@@ -152,7 +157,7 @@ export interface AuditEntry {
 }
 
 export interface MessageAuditEntry extends AuditEntry {
-  type: "Error" | "Message";
+  type: "Error" | "Message" | "Notification";
   message: string;
   details?: string;
   stack?: string;

@@ -38,7 +38,7 @@ export const syncCompletedOrders = () => {
     if (order) {
       syncCompletedOrder(detail, order);
     } else {
-      logMessage(`Unable to find order ${orderId}`);
+      logError(`Unable to find order ${orderId}`);
       return;
     }
   }

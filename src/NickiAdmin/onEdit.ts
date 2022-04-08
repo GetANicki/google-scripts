@@ -1,5 +1,5 @@
 import config from "../shared/config";
-import { logMessage } from "../shared/audit";
+import { logError, logMessage } from "../shared/audit";
 import { RowEditor } from "../shared/RowEditor";
 import { OrderEntryColumn } from "../shared/types";
 import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
@@ -33,5 +33,11 @@ export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
     );
   }
 
-  handlers.forEach((handler) => handler(evt));
+  handlers.forEach((handler) => {
+    try {
+      handler(evt);
+    } catch (ex: any) {
+      logError(`onEdit Failed`, ex);
+    }
+  });
 }

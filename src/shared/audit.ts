@@ -15,6 +15,10 @@ const AuditColumns = [
   "New Value",
 ] as const;
 
+export function notify(message: string, details?: string) {
+  audit({ type: "Notification", message, details });
+}
+
 export function logMessage(message: string, details?: string) {
   audit({ type: "Message", message, details });
 }
@@ -40,8 +44,14 @@ export const audit = (entry: MessageAuditEntry | ValueChangeAuditEntry) => {
 
   AuditRowEditor.insertRow(entry);
 
-  if (entry.type === "Error" || entry.type === "Message") {
-    SpreadsheetApp.getUi().alert(`${entry.message}\r\n${entry.details}`.trim());
+  if (entry.type === "Error") {
+    try {
+      SpreadsheetApp.getUi().alert(
+        `${entry.message}\r\n${entry.details}`.trim(),
+      );
+    } catch (ex) {
+      // NOOP
+    }
   }
 };
 

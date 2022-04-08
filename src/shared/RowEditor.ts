@@ -43,7 +43,7 @@ export class RowEditor<TColumnsType extends string> {
       type: "Change",
       column,
       newValue: value,
-      sheet: this.sheet.getName(),
+      sheet: `${this.sheet.getName()}:${this.rowIndex}`,
     });
   };
 
