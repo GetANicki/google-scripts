@@ -1,9 +1,10 @@
 import { audit, logError } from "./audit";
+import config from "./config";
 
 export class RowEditor<TColumnsType extends string> {
-  private rowIndex: number;
-  private sheet: GoogleAppsScript.Spreadsheet.Sheet;
-  private headers: TColumnsType[];
+  protected readonly rowIndex: number;
+  protected readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
+  protected readonly headers: TColumnsType[];
 
   constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number) {
     this.rowIndex = rowIndex;
@@ -102,4 +103,13 @@ export class RowEditor<TColumnsType extends string> {
 
     return new RowEditor<TColumnsType>(sheet, rowIndex + 1);
   }
+
+  static getSheet = (
+    name: string,
+    sheet?: GoogleAppsScript.Spreadsheet.Sheet,
+  ): GoogleAppsScript.Spreadsheet.Sheet =>
+    sheet ||
+    SpreadsheetApp.openByUrl(config.NickiDataSpreadsheetUrl)?.getSheetByName(
+      name,
+    )!;
 }

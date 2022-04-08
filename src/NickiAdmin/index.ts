@@ -13,6 +13,10 @@ export const menuItems: (
   | { name: "separator" }
 )[] = [
   {
+    name: "(Re)Format current row",
+    function: "Nicki.menu_FormatCurrentRow",
+  },
+  {
     name: "Sync OptimoRoute Nicki Assignments",
     function: "Nicki.menu_UpdateDriverAssignments",
   },

@@ -1,9 +1,18 @@
-import { logError, logMessage, notify } from "../../shared/audit";
+import { logError, notify } from "../../shared/audit";
 import config from "../../shared/config";
 import { syncCompletedOrders } from "./syncCompletedOrders";
 import { syncCustomerFormField } from "./syncCustomerFormField";
 import { syncLocationFormField } from "./syncLocationFormField";
 import { updateOrderDrivers } from "./updateOrderDrivers";
+import { formatCurrentRow } from "./formatCurrentRow";
+
+export function menu_FormatCurrentRow() {
+  try {
+    formatCurrentRow();
+  } catch (error: any) {
+    logError("menu_FormatCurrentRow", error);
+  }
+}
 
 export function menu_SyncCompletedOrders() {
   try {

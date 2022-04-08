@@ -1,9 +1,7 @@
 import { getRoutes } from "../../services/optimoroute";
-import {
-  assignDriversToOrders,
-  getOrders,
-  OrderDriver,
-} from "../../services/orders";
+import { assignDriversToOrders, getOrders } from "../../services/orders";
+import { logMessage } from "../../shared/audit";
+import { OrderDriver } from "../../shared/types";
 
 export const updateOrderDrivers = () => {
   const ordersWithoutDrivers = getOrders().filter(
@@ -23,6 +21,6 @@ export const updateOrderDrivers = () => {
     );
 
     assignDriversToOrders(orderDrivers);
-    console.log(`Drivers updated for ${date}.`);
+    logMessage(`Drivers updated for ${date}.`);
   }
 };

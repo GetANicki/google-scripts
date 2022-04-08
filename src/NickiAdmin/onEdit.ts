@@ -1,7 +1,6 @@
 import config from "../shared/config";
 import { logError, logMessage } from "../shared/audit";
 import { RowEditor } from "../shared/RowEditor";
-import { OrderEntryColumn } from "../shared/types";
 import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
 
 const handlers = [orderStatusHandler];
@@ -12,7 +11,7 @@ export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
   // Don't infinite loop!
   if (sheetName === config.AuditSheetName) return;
 
-  const editor = new RowEditor<OrderEntryColumn>(
+  const editor = new RowEditor<any>(
     evt.range.getSheet(),
     evt.range.getRowIndex(),
   );

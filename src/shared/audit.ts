@@ -15,10 +15,6 @@ const AuditColumns = [
   "New Value",
 ] as const;
 
-export function notify(message: string, details?: string) {
-  audit({ type: "Notification", message, details });
-}
-
 export function logMessage(message: string, details?: string) {
   audit({ type: "Message", message, details });
 }
@@ -37,6 +33,10 @@ export function logError(message: string, detailsOrError?: string | Error) {
   });
 }
 
+export function notify(message: string, details?: string) {
+  audit({ type: "Notification", message, details });
+}
+
 export const audit = (entry: MessageAuditEntry | ValueChangeAuditEntry) => {
   entry.timestamp = new Date().toUTCString();
 
@@ -44,7 +44,7 @@ export const audit = (entry: MessageAuditEntry | ValueChangeAuditEntry) => {
 
   AuditRowEditor.insertRow(entry);
 
-  if (entry.type === "Error") {
+  if (entry.type === "Error" || entry.type === "Notification") {
     try {
       SpreadsheetApp.getUi().alert(
         `${entry.message}\r\n${entry.details}`.trim(),
@@ -57,7 +57,7 @@ export const audit = (entry: MessageAuditEntry | ValueChangeAuditEntry) => {
 
 class AuditRowEditor extends RowEditor<typeof AuditColumns[number]> {
   constructor(rowIndex: number, sheet?: GoogleAppsScript.Spreadsheet.Sheet) {
-    super(AuditRowEditor.getSheet(sheet), rowIndex);
+    super(AuditRowEditor.getAuditSheet(sheet), rowIndex);
   }
 
   static insertRow = (
@@ -65,18 +65,15 @@ class AuditRowEditor extends RowEditor<typeof AuditColumns[number]> {
     beforePosition = 2,
     sheetParam?: GoogleAppsScript.Spreadsheet.Sheet,
   ): AuditRowEditor => {
-    const sheet = AuditRowEditor.getSheet(sheetParam);
+    const sheet = AuditRowEditor.getAuditSheet(sheetParam);
     sheet.insertRowBefore(beforePosition);
     const editor = new AuditRowEditor(beforePosition, sheet);
     editor.setValues(AuditColumns.map((col) => entry[camelcase(col)] || ""));
     return editor;
   };
 
-  private static getSheet = (
+  private static getAuditSheet = (
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,
   ): GoogleAppsScript.Spreadsheet.Sheet =>
-    sheet ||
-    SpreadsheetApp.openByUrl(config.NickiDataSpreadsheetUrl)?.getSheetByName(
-      config.AuditSheetName,
-    )!;
+    RowEditor.getSheet(config.AuditSheetName, sheet);
 }

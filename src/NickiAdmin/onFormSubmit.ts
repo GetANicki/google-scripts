@@ -1,8 +1,8 @@
 import { getCustomerById } from "../services/customers";
 import { NewLocationName } from "../services/locations";
+import { OrderEditor } from "../services/orders";
 import { logError, logMessage } from "../shared/audit";
 import { formatAsCurrency } from "../shared/googleExt";
-import { RowEditor } from "../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus, OrderStatuses } from "../shared/types";
 
 export function onFormSubmit({
@@ -13,10 +13,7 @@ export function onFormSubmit({
 }) {
   console.log("Processing form submission for row " + range.getRowIndex());
 
-  const editor = new RowEditor<OrderEntryColumn>(
-    range.getSheet(),
-    range.getRowIndex(),
-  );
+  const editor = new OrderEditor(range.getRowIndex());
 
   const timestamp = Date.now();
   const timestampDate = new Date(timestamp);
@@ -47,7 +44,6 @@ export function onFormSubmit({
       "Customer",
       editor
         .get("Customer")
-        ?.replace("<NO ADDR>", "")
         ?.replace(` (${customerId})`, "")
         ?.replace(` [${membership}]`, "")
         ?.trim(),
@@ -70,37 +66,14 @@ export function onFormSubmit({
     editor.set("Pickup Location", namedValues["New Pickup Location"]);
   }
 
-  // Set status filter
-  const statusValidation = SpreadsheetApp.newDataValidation()
-    .requireValueInList([...OrderStatuses])
-    .build();
-  editor.getCell("Status").setDataValidation(statusValidation);
-
   // populate customer info
   populateCustomerInfo(editor);
 
-  // set formulas in calculated fields
-  const transactionCell = editor.getCell("Transaction");
-  const surchargeCell = editor.getCell("Surcharge");
-  const servicePriceCell = editor.getCell("Service Price");
-  const nickiGrossCell = editor.getCell("Nicki Gross");
-  const nickiNetCell = editor.getCell("Nicki Net");
-
-  formatAsCurrency(
-    transactionCell,
-    surchargeCell,
-    servicePriceCell,
-    nickiGrossCell,
-    nickiNetCell,
-  );
-
-  nickiGrossCell.setFormula(
-    `=${transactionCell.getA1Notation()} + ${surchargeCell.getA1Notation()} + ${servicePriceCell.getA1Notation()}`,
-  );
-
-  nickiNetCell.setFormula(
-    `=${nickiGrossCell.getA1Notation()} - ${transactionCell.getA1Notation()}`,
-  );
+  try {
+    editor.formatCells();
+  } catch (ex: any) {
+    logError("Failed to format cells", ex);
+  }
 
   logMessage(
     `Processed form submission for Customer ${editor.get(
@@ -109,7 +82,7 @@ export function onFormSubmit({
   );
 }
 
-function populateCustomerInfo(editor: RowEditor<OrderEntryColumn>) {
+function populateCustomerInfo(editor: OrderEditor) {
   const customerId = editor.get("Customer ID");
 
   console.log(`Getting info for customer ${customerId}...`);

@@ -4,7 +4,7 @@ import {
   getCompletedOrderDetails,
   OptimoRouteFile,
 } from "../../services/optimoroute";
-import { getOrderEditor, getOrders } from "../../services/orders";
+import { getOrders, OrderEditor } from "../../services/orders";
 import { logError, logMessage } from "../../shared/audit";
 import { OrderFormEntry, OrderStatus } from "../../shared/types";
 
@@ -49,7 +49,7 @@ const syncCompletedOrder = (
   order: OrderFormEntry,
 ) => {
   const isDelivery = /_D$/.test(orderNo);
-  const editor = getOrderEditor(order.row);
+  const editor = new OrderEditor(order.row);
 
   if (isDelivery) {
     editor.set("Status", "Delivered" as OrderStatus);
@@ -69,7 +69,7 @@ const syncCompletedOrder = (
 };
 
 const saveReceipts = (
-  editor: ReturnType<typeof getOrderEditor>,
+  editor: OrderEditor,
   receiptImages: OptimoRouteFile[],
 ) => {
   if (!receiptImages.length) {

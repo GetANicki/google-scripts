@@ -60,6 +60,11 @@ export interface Driver {
   lastName: string;
 }
 
+export interface OrderDriver {
+  orderNo: string;
+  driverSerial: string;
+}
+
 export const OrderStatuses = [
   "Draft",
   "Confirmed",

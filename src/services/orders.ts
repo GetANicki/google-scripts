@@ -1,7 +1,9 @@
+import { logError, logMessage } from "../shared/audit";
 import config from "../shared/config";
-import { readSpreadsheet } from "../shared/googleExt";
+import { formatAsCurrency, readSpreadsheet } from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
 import {
+  OrderDriver,
   OrderEntryColumn,
   OrderFormEntry,
   OrderStatus,
@@ -9,13 +11,8 @@ import {
 } from "../shared/types";
 import { getDrivers } from "./drivers";
 
-export interface OrderDriver {
-  orderNo: string;
-  driverSerial: string;
-}
-
 export const getOrders = (): OrderFormEntry[] => {
-  const sheet = getOrdersSheet();
+  const sheet = OrderEditor.getOrdersSheet();
   const records = readSpreadsheet<Record<keyof OrderFormEntry, string>>(sheet);
 
   return records.map((record, idx) => ({
@@ -32,8 +29,7 @@ export const getOrders = (): OrderFormEntry[] => {
 };
 
 export const assignDriversToOrders = (orderDrivers: OrderDriver[]) => {
-  const sheet = getOrdersSheet();
-  const orders = getOrders();
+  const orders = getOrders().filter((x) => x.status !== "Paid");
   const drivers = getDrivers();
 
   const driverNames = drivers.reduce(
@@ -47,7 +43,6 @@ export const assignDriversToOrders = (orderDrivers: OrderDriver[]) => {
   console.log(
     `Driver Assignments:\r\n${JSON.stringify(orderDrivers, null, 2)}`,
   );
-  console.log(`Drivers:\r\n${JSON.stringify(driverNames, null, 2)}`);
   console.log(
     `Orders:\r\n${JSON.stringify(
       orders.map((x) => x.orderId),
@@ -58,25 +53,70 @@ export const assignDriversToOrders = (orderDrivers: OrderDriver[]) => {
 
   orderDrivers.forEach(({ orderNo, driverSerial }) => {
     const order = orders.find((x) => x.orderId.trim() === orderNo.trim());
+    const driverName = driverNames[driverSerial]?.trim();
 
     if (order) {
-      const editor = new RowEditor<OrderEntryColumn>(sheet, order.row);
-      editor.set("Nicki ID", driverSerial);
-      editor.set("Nicki", driverNames[driverSerial]);
+      const editor = new OrderEditor(order.row);
 
-      console.log(
-        `Updated Order ${orderNo} to Nicki ${driverNames[driverSerial]} (${driverSerial})`,
-      );
+      if (editor.get("Nicki ID")?.trim() !== driverSerial.trim()) {
+        editor.set("Nicki ID", driverSerial);
+        editor.set("Nicki", driverName);
+        logMessage(
+          `Updated Order ${orderNo} to Nicki ${driverName} (${driverSerial})`,
+        );
+      }
     } else {
-      console.log(`Unable to find order ${orderNo}`);
+      logError(`Unable to find order ${orderNo}`);
     }
   });
 };
 
-export const getOrderEditor = (row: number) =>
-  new RowEditor<OrderEntryColumn>(getOrdersSheet(), row);
+export class OrderEditor extends RowEditor<OrderEntryColumn> {
+  constructor(rowIndex: number, sheet?: GoogleAppsScript.Spreadsheet.Sheet) {
+    super(OrderEditor.getOrdersSheet(sheet), rowIndex);
+  }
 
-const getOrdersSheet = () =>
-  SpreadsheetApp.openByUrl(config.NickiDataSpreadsheetUrl)?.getSheetByName(
-    config.OrdersSheetName,
-  )!;
+  formatCells = () => {
+    // Set status filter
+    const statusValidation = SpreadsheetApp.newDataValidation()
+      .requireValueInList([...OrderStatuses])
+      .build();
+    this.getCell("Status").setDataValidation(statusValidation);
+
+    // Set location filters
+    const locationValidation = SpreadsheetApp.newDataValidation()
+      .requireValueInRange(
+        this.sheet.getRange(`'${config.LocationsSheetName}'!$B$2:$B`),
+      )
+      .build();
+    this.getCell("Pickup Location").setDataValidation(locationValidation);
+    this.getCell("Drop-off Location").setDataValidation(locationValidation);
+
+    // set formulas in calculated fields
+    const transactionCell = this.getCell("Transaction");
+    const surchargeCell = this.getCell("Surcharge");
+    const servicePriceCell = this.getCell("Service Price");
+    const nickiGrossCell = this.getCell("Nicki Gross");
+    const nickiNetCell = this.getCell("Nicki Net");
+
+    formatAsCurrency(
+      transactionCell,
+      surchargeCell,
+      servicePriceCell,
+      nickiGrossCell,
+      nickiNetCell,
+    );
+
+    nickiGrossCell.setFormula(
+      `=${transactionCell.getA1Notation()} + ${surchargeCell.getA1Notation()} + ${servicePriceCell.getA1Notation()}`,
+    );
+
+    nickiNetCell.setFormula(
+      `=${nickiGrossCell.getA1Notation()} - ${transactionCell.getA1Notation()}`,
+    );
+  };
+
+  static getOrdersSheet = (
+    sheet?: GoogleAppsScript.Spreadsheet.Sheet | undefined,
+  ) => RowEditor.getSheet(config.OrdersSheetName, sheet);
+}
