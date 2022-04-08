@@ -1,5 +1,6 @@
 export { onEdit } from "./onEdit";
 export { onFormSubmit } from "./onFormSubmit";
+export { logError } from "../shared/audit";
 
 // Menu exports
 export * from "./menu";
@@ -21,8 +22,12 @@ export const menuItems: (
   },
   { name: "separator" },
   {
-    name: "Sync External Form Data",
-    function: "Nicki.menu_SyncExternalFormData",
+    name: "Sync Customer Form Field",
+    function: "Nicki.menu_SyncCustomerFormField",
+  },
+  {
+    name: "Sync Location Form Field",
+    function: "Nicki.menu_SyncLocationFormField",
   },
 ];
 

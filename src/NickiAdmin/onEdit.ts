@@ -1,3 +1,5 @@
+import config from "../shared/config";
+import { logMessage } from "../shared/audit";
 import { RowEditor } from "../shared/RowEditor";
 import { OrderEntryColumn } from "../shared/types";
 import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
@@ -5,19 +7,31 @@ import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
 const handlers = [orderStatusHandler];
 
 export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
+  const sheetName = evt.range.getSheet().getName();
+
+  // Don't infinite loop!
+  if (sheetName === config.AuditSheetName) return;
+
   const editor = new RowEditor<OrderEntryColumn>(
     evt.range.getSheet(),
     evt.range.getRowIndex(),
   );
   const columnName = editor.getColumnName(evt.range);
-  const sheetName = evt.range.getSheet().getName();
   const columnIndex = evt.range.getColumn();
 
-  console.log(
-    `onEdit: ${sheetName}!${columnIndex}:${evt.range.getRowIndex()} (${columnName}) New Value: ${
-      evt.value
-    }, Old Value: ${evt.oldValue}`,
-  );
+  if (sheetName === config.OrdersSheetName) {
+    const customerId = editor.get("Customer ID");
+    const orderId = editor.get("Order ID");
+    logMessage(
+      `onEdit: ${customerId}:${orderId} (${columnName}) New Value: ${evt.value}, Old Value: ${evt.oldValue}`,
+    );
+  } else {
+    logMessage(
+      `onEdit: ${sheetName}!${columnIndex}:${evt.range.getRowIndex()} (${columnName}) New Value: ${
+        evt.value
+      }, Old Value: ${evt.oldValue}`,
+    );
+  }
 
   handlers.forEach((handler) => handler(evt));
 }

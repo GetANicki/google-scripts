@@ -19,15 +19,10 @@ export function orderStatusHandler(evt: GoogleAppsScript.Events.SheetsOnEdit) {
 
   const status = evt.value as OrderStatus;
 
-  try {
-    switch (status) {
-      case "Confirmed":
-        scheduleOrder(editor);
-        break;
-    }
-  } catch (ex) {
-    SpreadsheetApp.getUi().alert(`Error: ${JSON.stringify(ex)}`);
-    throw ex;
+  switch (status) {
+    case "Confirmed":
+      scheduleOrder(editor);
+      break;
   }
 }
 

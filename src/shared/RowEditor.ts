@@ -1,3 +1,5 @@
+import { audit, logError } from "./audit";
+
 export class RowEditor<TColumnsType extends string> {
   private rowIndex: number;
   private sheet: GoogleAppsScript.Spreadsheet.Sheet;
@@ -10,26 +12,39 @@ export class RowEditor<TColumnsType extends string> {
       .getRange("1:1")
       .getValues()[0]
       .map((x) => x.trim());
-
-    console.log("Headers: ", JSON.stringify(this.headers));
   }
 
   get = <T = string>(column: TColumnsType): T =>
     this.getCell(column)?.getValue();
 
-  getCell = (column: TColumnsType) =>
-    this.sheet.getRange(
-      this.rowIndex,
-      this.headers.indexOf(column.trim() as TColumnsType) + 1,
-    );
+  getCell = (column: TColumnsType) => {
+    try {
+      return this.sheet.getRange(
+        this.rowIndex,
+        this.headers.indexOf(column.trim() as TColumnsType) + 1,
+      );
+    } catch (ex: any) {
+      logError(`Failed to get column ${column}`, ex);
+      throw ex;
+    }
+  };
 
   getColumnName = (
     range: GoogleAppsScript.Spreadsheet.Range,
   ): TColumnsType | null => this.headers[range.getColumn() - 1];
 
+  protected getRow = (): GoogleAppsScript.Spreadsheet.Range =>
+    this.sheet.getRange(`${this.rowIndex}:${this.rowIndex}`);
+
   set = (column: TColumnsType, value: any): void => {
     this.getCell(column).setValue(value);
-    console.log(`Set ${column}: `, value);
+
+    audit({
+      type: "Change",
+      column,
+      newValue: value,
+      sheet: this.sheet.getName(),
+    });
   };
 
   setDate = (column: TColumnsType, value: Date): void =>
@@ -43,6 +58,14 @@ export class RowEditor<TColumnsType extends string> {
     this.getCell(column).setFormula(
       formula(formulaColumns.map((x) => this.getCell(x).getA1Notation())),
     );
+  };
+
+  protected setValues = (values: string[]) => {
+    const toAdd = Array.from(
+      { ...values, length: this.headers.length },
+      (x) => x || "",
+    );
+    this.getRow().setValues([toAdd]);
   };
 
   lockCells(columnNames: TColumnsType[]) {

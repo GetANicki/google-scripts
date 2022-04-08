@@ -1,3 +1,4 @@
+import { logMessage } from "../shared/audit";
 import config from "../shared/config";
 import { Location } from "../shared/types";
 import { addQuery, shortDate } from "../shared/util";
@@ -88,7 +89,10 @@ export const upsertOrder = (
     },
   });
 
-  console.log("Scheduled pickup: ", JSON.stringify(pickupOrder, null, 2));
+  logMessage(
+    `Scheduled pickup ${orderNo} for ${pickup.customerName}`,
+    JSON.stringify(pickupOrder),
+  );
 
   // schedule delivery (related to pickup)
   const deliveryOrder = fetch<OptimoCreateRouteResponse>("/create_order", {
@@ -111,7 +115,12 @@ export const upsertOrder = (
       customField4: delivery.customerName || pickup.customerName,
     },
   });
-  console.log("Scheduled delivery: ", JSON.stringify(deliveryOrder, null, 2));
+  logMessage(
+    `Scheduled delivery ${orderNo}_D for ${
+      delivery.customerName || pickup.customerName
+    }`,
+    JSON.stringify(deliveryOrder),
+  );
 
   // save location (or update existing location with correct lat/long),
   // but only if they are not home addresses
@@ -120,6 +129,10 @@ export const upsertOrder = (
     !pickupOrder.location.locationNo.endsWith(HomeLocationNoSuffix)
   ) {
     saveLocation(pickupOrder.location);
+  } else {
+    console.log(
+      `Skipping updating pickup location ${pickupOrder.location?.locationNo}`,
+    );
   }
 
   if (
@@ -127,6 +140,10 @@ export const upsertOrder = (
     !deliveryOrder.location.locationNo.endsWith(HomeLocationNoSuffix)
   ) {
     saveLocation(deliveryOrder.location);
+  } else {
+    console.log(
+      `Skipping updating delivery location ${deliveryOrder.location?.locationNo}`,
+    );
   }
 };
 
@@ -185,12 +202,15 @@ const fetch = <T>(
       headers: {
         "Content-Type": "application/json",
       },
-    }).getContentText();
+    });
 
-    const body = JSON.parse(response || "");
+    if (response.getResponseCode() > 302) {
+      throw Error(`OptimoRoute API Error: ${JSON.stringify(response)}`);
+    }
+
+    const body = JSON.parse(response.getContentText() || "");
 
     if (body?.success === false) {
-      console.log(`OptimoRoute ERROR: ${response}`);
       throw Error(`OptimoRoute API Error: ${response}`);
     }
 

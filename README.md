@@ -19,11 +19,6 @@ The project folder structure is unconventional for a few reasons, but each proje
 
 ## Projects
 
-### NickiOrderForm
-
-Extensions on the GAN Order Submission Google Form.
-Populates drop-down fields such as Customers and Nickis and calculates/auto-populates spreadsheet various fields on form submission.
-
 ### NickiAdmin
 
 ## Local Development Setup
@@ -32,7 +27,6 @@ Populates drop-down fields such as Customers and Nickis and calculates/auto-popu
 1. Create file `.env`:
 
 ```config
-NICKIDATA_SPREADSHEET=<Data Spreadsheet URL>
 OPTIMOROUTE_APIKEY=<APIKEY>
 STRIPE_APIKEY=<APIKEY>
 ```

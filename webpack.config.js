@@ -3,11 +3,12 @@ const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
 
-const Projects = ["NickiAdmin", "NickiOrderForm"];
+const Projects = ["NickiAdmin"];
 
-console.log("ENV:", process.env.NODE_ENV);
-
-module.exports = {
+/**
+ * @param {{ development: boolean }} env
+ */
+module.exports = ({ development }) => ({
   entry: Projects.reduce(
     (entries, projectName) => ({
       ...entries,
@@ -42,17 +43,35 @@ module.exports = {
       maxChunks: 1,
     }),
     new Dotenv({
-      path: `./.env.${
-        process.env.NODE_ENV === "production" ? "production" : "dev"
-      }`,
+      path: `.env.${development ? "development" : "production"}`,
+      allowEmptyValues: false,
+      safe: true,
+      silent: false,
+      systemvars: true,
+    }),
+    new Dotenv({
+      path: `.env`,
     }),
     new CopyPlugin({
       patterns: [
-        { from: `*/.clasp.json`, context: "src/" },
+        {
+          from: `*/.clasp.json`,
+          context: "src/",
+          transform: {
+            transformer: (content) =>
+              content
+                .toString()
+                .replace(
+                  "SCRIPT_ID",
+                  process.env.CLASP_SCRIPT_ID ||
+                    "1972_r7VW7xV1mkfWQh3GbTGjsgaduvzKOl0Z3-u4gkoWlHtQHGifhyj-",
+                ),
+          },
+        },
         { from: `*/appsscript.json`, context: "src/" },
         { from: `*/entry.js`, context: "src/" },
         //{ from: `*/*.html`, context: "src/" },
       ],
     }),
   ],
-};
+});

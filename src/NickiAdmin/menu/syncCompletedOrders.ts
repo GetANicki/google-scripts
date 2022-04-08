@@ -5,6 +5,7 @@ import {
   OptimoRouteFile,
 } from "../../services/optimoroute";
 import { getOrderEditor, getOrders } from "../../services/orders";
+import { logError, logMessage } from "../../shared/audit";
 import { OrderFormEntry, OrderStatus } from "../../shared/types";
 
 const OrderStatusesToSync: OrderStatus[] = ["Scheduled", "Delivered"];
@@ -15,7 +16,7 @@ export const syncCompletedOrders = () => {
   );
 
   if (!ordersToSync.length) {
-    console.log("No orders found to sync");
+    logMessage("No orders found to sync");
     return;
   }
 
@@ -24,7 +25,7 @@ export const syncCompletedOrders = () => {
     ordersToSync.flatMap((x) => [x.orderId, `${x.orderId}_D`]),
   );
 
-  console.log(
+  logMessage(
     `Found ${completedOrders.length} completed orders: ${JSON.stringify(
       completedOrders.map((x) => x.orderNo).join(", "),
     )}`,
@@ -37,7 +38,7 @@ export const syncCompletedOrders = () => {
     if (order) {
       syncCompletedOrder(detail, order);
     } else {
-      console.log(`Unable to find order ${orderId}`);
+      logMessage(`Unable to find order ${orderId}`);
       return;
     }
   }
@@ -72,24 +73,30 @@ const saveReceipts = (
   receiptImages: OptimoRouteFile[],
 ) => {
   if (!receiptImages.length) {
-    console.log("No receipt images to save - skipping...");
+    logMessage("No receipt images to save - skipping...");
     return;
   }
 
-  const folderName = editor.get("Order ID");
+  const orderId = editor.get("Order ID");
   let folderUrl: string | null = null;
+  let saveCount = 0;
 
   for (const receipt of receiptImages) {
     try {
       const image = UrlFetchApp.fetch(receipt.url, { method: "get" }).getBlob();
       console.log(`Downloaded ${receipt.url}`);
-      const savedImage = saveFile(folderName, image);
+      const savedImage = saveFile(orderId, image);
       console.log(`Saved ${receipt.url} to ${savedImage.fileUrl}`);
       folderUrl = folderUrl || savedImage.folderUrl;
-    } catch (ex) {
-      console.log(`Error saving ${receipt.url}: ${JSON.stringify(ex)}`);
+      saveCount += 1;
+    } catch (ex: any) {
+      logError(`Error saving ${receipt.url}`, ex);
     }
   }
+
+  logMessage(
+    `Saved ${saveCount} of ${receiptImages.length} images to ${folderUrl} for Order ID ${orderId}`,
+  );
 
   if (folderUrl) {
     const linkText = "Receipt(s)";

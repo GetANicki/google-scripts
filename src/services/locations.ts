@@ -7,7 +7,7 @@ import { onelineAddress } from "../shared/util";
 import { getCustomerById } from "./customers";
 
 export const HomeLocationName = "Home";
-export const OtherLocationName = "** New Location **";
+export const NewLocationName = "** New Location **";
 export const HomeLocationNoSuffix = "HOME";
 
 const LocationColumns = [
@@ -20,14 +20,11 @@ const LocationColumns = [
 
 type LocationColumn = typeof LocationColumns[number];
 
-const isAddress = (addressOrLocationName: string): boolean =>
-  !!addressOrLocationName?.includes(" ");
-
 export const getLocation = (
   addressOrLocationName: string,
   customerOrcustomerId?: string | Customer,
 ): Location | null => {
-  if (addressOrLocationName === OtherLocationName) return null;
+  if (addressOrLocationName === NewLocationName) return null;
 
   // resolve customer home address
   if (

@@ -103,7 +103,6 @@ export const OrderEntryColumns = [
   "Nicki ID",
   "Service ID",
   "Created",
-  "Created By",
   "Timestamp",
   "Status",
   "Customer",
@@ -139,4 +138,30 @@ export interface Location {
   longitude?: number;
   locationNo?: string;
   locationName?: string;
+}
+
+/**
+ * Auditing and logging
+ */
+export const AuditEntryTypes = ["Error", "Message", "Change"] as const;
+export type AuditEntryType = typeof AuditEntryTypes[number];
+
+export interface AuditEntry {
+  timestamp?: string;
+  type: AuditEntryType;
+}
+
+export interface MessageAuditEntry extends AuditEntry {
+  type: "Error" | "Message";
+  message: string;
+  details?: string;
+  stack?: string;
+}
+
+export interface ValueChangeAuditEntry extends AuditEntry {
+  type: "Change";
+  sheet?: string;
+  column: string;
+  newValue: string;
+  oldValue?: string;
 }

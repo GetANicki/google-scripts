@@ -28,6 +28,9 @@ jobs:
             echo "CLASP_SCRIPT_ID=${{ secrets.PROD_CLASP_SCRIPT_ID }}" >> $GITHUB_ENV
           fi
 
+          echo "OPTIMOROUTE_APIKEY=${{ secrets.OPTIMOROUTE_APIKEY }}" >> $GITHUB_ENV
+          echo "STRIPE_APIKEY=${{ secrets.STRIPE_APIKEY }}" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -48,14 +51,13 @@ jobs:
         run: npm test
 
       - name: Deploy
-        run: echo "clasp push ${{ env.CLASP_SCRIPT_ID }}"
-      #   uses: daikikatsuragawa/clasp-action@v1.1.0
-      #   with:
-      #     accessToken: ${{ secrets.CLASP_ACCESS_TOKEN }}
-      #     idToken: ${{ secrets.CLASP_ID_TOKEN }}
-      #     refreshToken: ${{ secrets.CLASP_REFRESH_TOKEN }}
-      #     clientId: ${{ secrets.CLASP_CLIENT_ID }}
-      #     clientSecret: ${{ secrets.CLASP_CLIENT_SECRET }}
-      #     scriptId: ${{ env.CLASP_SCRIPT_ID }}
-      #     rootDir: "dist/NickiAdmin"
-      #     command: "push"
+        uses: daikikatsuragawa/clasp-action@v1.1.0
+        with:
+          accessToken: ${{ secrets.CLASP_ACCESS_TOKEN }}
+          idToken: ${{ secrets.CLASP_ID_TOKEN }}
+          refreshToken: ${{ secrets.CLASP_REFRESH_TOKEN }}
+          clientId: ${{ secrets.CLASP_CLIENT_ID }}
+          clientSecret: ${{ secrets.CLASP_CLIENT_SECRET }}
+          scriptId: ${{ env.CLASP_SCRIPT_ID }}
+          rootDir: "dist/NickiAdmin"
+          command: "push"

@@ -12,7 +12,8 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "rootDir": "./src",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "preserveConstEnums": false
   },
   "include": ["./src/**/*.ts"]
 }
