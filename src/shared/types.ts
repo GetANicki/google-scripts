@@ -56,6 +56,7 @@ export interface Customer {
 
 export interface Driver {
   driverId: string;
+  displayName: string;
   firstName: string;
   lastName: string;
 }

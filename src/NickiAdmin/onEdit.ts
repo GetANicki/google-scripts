@@ -2,8 +2,9 @@ import config from "../shared/config";
 import { logError, logMessage } from "../shared/audit";
 import { RowEditor } from "../shared/RowEditor";
 import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
+import { driverAssignmentHandler } from "./editHandlers/driverAssignmentHandler";
 
-const handlers = [orderStatusHandler];
+const handlers = [orderStatusHandler, driverAssignmentHandler];
 
 export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
   const sheetName = evt.range.getSheet().getName();

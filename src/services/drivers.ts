@@ -9,3 +9,9 @@ export const getDrivers = (): Driver[] => {
     )!,
   );
 };
+
+export const findDriverById = (driverId: string): Driver | null =>
+  getDrivers().find((x) => x.driverId?.trim() === driverId) || null;
+
+export const findDriverByName = (name: string): Driver | null =>
+  getDrivers().find((x) => x.displayName?.trim() === name) || null;

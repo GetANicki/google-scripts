@@ -15,18 +15,14 @@ export function parseSpreadsheetValues<T>(
   headers: string[],
   rows: string[][],
 ): T[] {
-  return (
-    rows
-      //.filter((x) => x.every((y) => !!y))
-      .map((row) =>
-        headers.reduce(
-          (obj, header) => ({
-            ...obj,
-            [camelcase(header)]: row[headers.indexOf(header)],
-          }),
-          {} as T,
-        ),
-      )
+  return rows.map((row) =>
+    headers.reduce(
+      (obj, header) => ({
+        ...obj,
+        [camelcase(header)]: row[headers.indexOf(header)],
+      }),
+      {} as T,
+    ),
   );
 }
 

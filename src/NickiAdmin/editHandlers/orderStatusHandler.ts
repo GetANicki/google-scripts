@@ -1,30 +1,24 @@
 import { getLocation } from "../../services/locations";
 import { upsertOrder } from "../../services/optimoroute";
-import config from "../../shared/config";
 import { RowEditor } from "../../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus } from "../../shared/types";
+import { orderEditHandler } from "./orderEditHandler";
 
-export function orderStatusHandler(evt: GoogleAppsScript.Events.SheetsOnEdit) {
-  const editor = new RowEditor<OrderEntryColumn>(
-    evt.range.getSheet(),
-    evt.range.getRowIndex(),
-  );
+export const orderStatusHandler = orderEditHandler(
+  (column, newValue, editor) => {
+    if (column !== "Status") {
+      return;
+    }
 
-  if (
-    evt.range.getSheet().getName() !== config.OrdersSheetName ||
-    editor.getColumnName(evt.range) !== "Status"
-  ) {
-    return;
-  }
+    const status = newValue as OrderStatus;
 
-  const status = evt.value as OrderStatus;
-
-  switch (status) {
-    case "Confirmed":
-      scheduleOrder(editor);
-      break;
-  }
-}
+    switch (status) {
+      case "Confirmed":
+        scheduleOrder(editor);
+        break;
+    }
+  },
+);
 
 const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
   const orderId =

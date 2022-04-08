@@ -15,8 +15,13 @@ export class RowEditor<TColumnsType extends string> {
       .map((x) => x.trim());
   }
 
-  get = <T = string>(column: TColumnsType): T =>
-    this.getCell(column)?.getValue();
+  get = <T = string>(column: TColumnsType): T => {
+    const value = this.getCell(column)?.getValue();
+
+    if (typeof value === "string") return value?.trim() as any;
+
+    return value;
+  };
 
   getCell = (column: TColumnsType) => {
     try {
@@ -59,6 +64,12 @@ export class RowEditor<TColumnsType extends string> {
     this.getCell(column).setFormula(
       formula(formulaColumns.map((x) => this.getCell(x).getA1Notation())),
     );
+  };
+
+  setIfDifferent = <T>(column: TColumnsType, value: T): void => {
+    if (this.get<T>(column) !== value) {
+      this.set(column, value);
+    }
   };
 
   protected setValues = (values: string[]) => {

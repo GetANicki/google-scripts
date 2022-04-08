@@ -14,6 +14,8 @@ jobs:
   Build:
     runs-on: ubuntu-latest
 
+    environment: "${{ endsWith(github.ref, 'main') && 'production' || 'develop' }}"
+
     steps:
       - name: Set variables
         id: setvars
