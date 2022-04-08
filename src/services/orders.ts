@@ -7,6 +7,7 @@ import {
   OrderDriver,
   OrderEntryColumn,
   OrderFormEntry,
+  OrderPriorities,
   OrderStatus,
   OrderStatuses,
 } from "../shared/types";
@@ -75,6 +76,7 @@ export const assignDriversToOrders = (orderDrivers: OrderDriver[]) => {
 export class OrderEditor extends RowEditor<OrderEntryColumn> {
   constructor(rowIndex: number, sheet?: GoogleAppsScript.Spreadsheet.Sheet) {
     super(OrderEditor.getOrdersSheet(sheet), rowIndex);
+    if (rowIndex === 1) throw Error("Unable to modify header row");
   }
 
   assignDriver = (driver: Driver | null) => {
@@ -106,6 +108,13 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
         )
         .build(),
     );
+
+    // Set status filter
+    const priorityValidation = SpreadsheetApp.newDataValidation()
+      .requireValueInList([...OrderPriorities])
+      .build();
+    this.getCell("Priority").setDataValidation(priorityValidation);
+    this.setColumnWidth("Priority", 70);
 
     // set formulas in calculated fields
     const transactionCell = this.getCell("Transaction");

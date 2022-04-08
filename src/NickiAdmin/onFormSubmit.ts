@@ -1,9 +1,15 @@
 import { getCustomerById } from "../services/customers";
+import { UnassignedDriverId } from "../services/drivers";
 import { NewLocationName } from "../services/locations";
 import { OrderEditor } from "../services/orders";
 import { logError, logMessage } from "../shared/audit";
 import { formatAsCurrency } from "../shared/googleExt";
-import { OrderEntryColumn, OrderStatus, OrderStatuses } from "../shared/types";
+import {
+  OrderEntryColumn,
+  OrderPriority,
+  OrderStatus,
+  OrderStatuses,
+} from "../shared/types";
 
 export function onFormSubmit({
   namedValues,
@@ -56,6 +62,17 @@ export function onFormSubmit({
     if (!customerId) {
       throw "Expected Customer ID but none existed - ABORTING";
     }
+  }
+
+  // Default driver to Unassigned
+  if (!editor.get("Nicki ID")) {
+    editor.set("Nicki ID", UnassignedDriverId);
+    editor.set("Nicki", "Unassigned");
+  }
+
+  // Default Priority
+  if (!editor.get("Priority")) {
+    editor.set("Priority", "Medium" as OrderPriority);
   }
 
   // copy the new locations if specified

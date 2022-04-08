@@ -77,6 +77,9 @@ export const OrderStatuses = [
 
 export type OrderStatus = typeof OrderStatuses[number];
 
+export const OrderPriorities = ["Low", "Medium", "High", "Critical"] as const;
+export type OrderPriority = typeof OrderPriorities[number];
+
 export interface OrderFormEntry {
   row: number;
   orderId: string;
@@ -121,6 +124,7 @@ export const OrderEntryColumns = [
   "Pickup Comments",
   "Pickup Link",
   "Pickup Duration",
+  "Priority",
   "New Pickup Location",
   "Drop-off Location",
   "Drop-off Phone Number",

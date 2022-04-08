@@ -72,14 +72,6 @@ export class RowEditor<TColumnsType extends string> {
     }
   };
 
-  protected setValues = (values: string[]) => {
-    const toAdd = Array.from(
-      { ...values, length: this.headers.length },
-      (x) => x || "",
-    );
-    this.getRow().setValues([toAdd]);
-  };
-
   lockCells(columnNames: TColumnsType[]) {
     columnNames.forEach((column) =>
       this.getCell(column).protect().setDescription("Auto-Calculated value"),
@@ -92,6 +84,18 @@ export class RowEditor<TColumnsType extends string> {
       .filter((x) => x.getRange().getRowIndex() === this.rowIndex)
       .forEach((x) => x.remove());
   }
+
+  protected setColumnWidth = (column: TColumnsType, width: number) => {
+    this.sheet.setColumnWidth(this.getCell(column).getColumn(), width);
+  };
+
+  protected setValues = (values: string[]) => {
+    const toAdd = Array.from(
+      { ...values, length: this.headers.length },
+      (x) => x || "",
+    );
+    this.getRow().setValues([toAdd]);
+  };
 
   static createFromRange<TColumnsType extends string>(
     range: GoogleAppsScript.Spreadsheet.Range,

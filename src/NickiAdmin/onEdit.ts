@@ -12,6 +12,9 @@ export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
   // Don't infinite loop!
   if (sheetName === config.AuditSheetName) return;
 
+  // don't react to header row changes
+  if (evt.range.getRow() === 1) return;
+
   const editor = new RowEditor<any>(
     evt.range.getSheet(),
     evt.range.getRowIndex(),

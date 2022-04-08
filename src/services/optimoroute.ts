@@ -1,7 +1,8 @@
 import { logMessage } from "../shared/audit";
 import config from "../shared/config";
-import { Location } from "../shared/types";
+import { Location, OrderPriority } from "../shared/types";
 import { addQuery, shortDate } from "../shared/util";
+import { UnassignedDriverId } from "./drivers";
 import { HomeLocationNoSuffix, saveLocation } from "./locations";
 
 export interface OptimoRouteFile {
@@ -29,8 +30,10 @@ export interface OptimoCompletedOrderDetails {
 
 export interface OptimoRouteOrder {
   date: Date;
+  driverId?: string;
   location: Location;
   duration?: number;
+  priority?: OrderPriority;
   notes?: string;
   phone?: string;
   link?: string;
@@ -76,12 +79,14 @@ export const upsertOrder = (
       orderNo: orderNo,
       type: "P",
       date: shortDate(pickup.date || new Date()),
+      assignedTo: { serial: pickup.driverId || UnassignedDriverId },
       location: {
         ...sanitizeLocation(pickup.location),
         acceptPartialMatch: !pickup.location.latitude,
         acceptMultipleResults: !pickup.location.latitude,
       },
       duration: (pickup.duration && +pickup.duration) || 5,
+      priority: (pickup.priority || "Medium").substring(0, 1),
       notes: pickup.notes,
       customField1: pickup.link,
       customField2: pickup.attachment,
@@ -103,12 +108,19 @@ export const upsertOrder = (
       relatedOrderNo: orderNo,
       type: "D",
       date: shortDate(delivery.date || pickup.date || new Date()),
+      assignedTo: {
+        serial: delivery.driverId || pickup.driverId || UnassignedDriverId,
+      },
       location: {
         ...sanitizeLocation(delivery.location),
         acceptPartialMatch: !delivery.location.latitude,
         acceptMultipleResults: !delivery.location.latitude,
       },
       duration: (delivery.duration && +delivery.duration) || 5,
+      priority: (delivery.priority || pickup.priority || "Medium").substring(
+        0,
+        1,
+      ),
       notes: delivery.notes,
       phone: delivery.phone,
       customField1: delivery.link,

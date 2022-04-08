@@ -57,6 +57,8 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
       link: editor.get("Pickup Link"),
       customerName: editor.get("Customer"),
       attachment: editor.get("Attachment"),
+      priority: editor.get("Priority"),
+      driverId: editor.get("Nicki ID"),
     },
     {
       date,
