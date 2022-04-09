@@ -56,6 +56,7 @@ export interface Customer {
 
 export interface Driver {
   driverId: string;
+  displayName: string;
   firstName: string;
   lastName: string;
 }
@@ -75,6 +76,9 @@ export const OrderStatuses = [
 ] as const;
 
 export type OrderStatus = typeof OrderStatuses[number];
+
+export const OrderPriorities = ["Low", "Medium", "High", "Critical"] as const;
+export type OrderPriority = typeof OrderPriorities[number];
 
 export interface OrderFormEntry {
   row: number;
@@ -120,6 +124,7 @@ export const OrderEntryColumns = [
   "Pickup Comments",
   "Pickup Link",
   "Pickup Duration",
+  "Priority",
   "New Pickup Location",
   "Drop-off Location",
   "Drop-off Phone Number",

@@ -15,8 +15,13 @@ export class RowEditor<TColumnsType extends string> {
       .map((x) => x.trim());
   }
 
-  get = <T = string>(column: TColumnsType): T =>
-    this.getCell(column)?.getValue();
+  get = <T = string>(column: TColumnsType): T => {
+    const value = this.getCell(column)?.getValue();
+
+    if (typeof value === "string") return value?.trim() as any;
+
+    return value;
+  };
 
   getCell = (column: TColumnsType) => {
     try {
@@ -61,12 +66,10 @@ export class RowEditor<TColumnsType extends string> {
     );
   };
 
-  protected setValues = (values: string[]) => {
-    const toAdd = Array.from(
-      { ...values, length: this.headers.length },
-      (x) => x || "",
-    );
-    this.getRow().setValues([toAdd]);
+  setIfDifferent = <T>(column: TColumnsType, value: T): void => {
+    if (this.get<T>(column) !== value) {
+      this.set(column, value);
+    }
   };
 
   lockCells(columnNames: TColumnsType[]) {
@@ -81,6 +84,18 @@ export class RowEditor<TColumnsType extends string> {
       .filter((x) => x.getRange().getRowIndex() === this.rowIndex)
       .forEach((x) => x.remove());
   }
+
+  protected setColumnWidth = (column: TColumnsType, width: number) => {
+    this.sheet.setColumnWidth(this.getCell(column).getColumn(), width);
+  };
+
+  protected setValues = (values: string[]) => {
+    const toAdd = Array.from(
+      { ...values, length: this.headers.length },
+      (x) => x || "",
+    );
+    this.getRow().setValues([toAdd]);
+  };
 
   static createFromRange<TColumnsType extends string>(
     range: GoogleAppsScript.Spreadsheet.Range,

@@ -3,9 +3,11 @@ import config from "../shared/config";
 import { formatAsCurrency, readSpreadsheet } from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
 import {
+  Driver,
   OrderDriver,
   OrderEntryColumn,
   OrderFormEntry,
+  OrderPriorities,
   OrderStatus,
   OrderStatuses,
 } from "../shared/types";
@@ -74,7 +76,13 @@ export const assignDriversToOrders = (orderDrivers: OrderDriver[]) => {
 export class OrderEditor extends RowEditor<OrderEntryColumn> {
   constructor(rowIndex: number, sheet?: GoogleAppsScript.Spreadsheet.Sheet) {
     super(OrderEditor.getOrdersSheet(sheet), rowIndex);
+    if (rowIndex === 1) throw Error("Unable to modify header row");
   }
+
+  assignDriver = (driver: Driver | null) => {
+    this.setIfDifferent("Nicki ID", driver?.driverId);
+    this.setIfDifferent("Nicki", driver?.displayName);
+  };
 
   formatCells = () => {
     // Set status filter
@@ -91,6 +99,22 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       .build();
     this.getCell("Pickup Location").setDataValidation(locationValidation);
     this.getCell("Drop-off Location").setDataValidation(locationValidation);
+
+    // Set Nicki filters
+    this.getCell("Nicki").setDataValidation(
+      SpreadsheetApp.newDataValidation()
+        .requireValueInRange(
+          this.sheet.getRange(`'${config.NickiDriversSheetName}'!$B$2:$B`),
+        )
+        .build(),
+    );
+
+    // Set status filter
+    const priorityValidation = SpreadsheetApp.newDataValidation()
+      .requireValueInList([...OrderPriorities])
+      .build();
+    this.getCell("Priority").setDataValidation(priorityValidation);
+    this.setColumnWidth("Priority", 70);
 
     // set formulas in calculated fields
     const transactionCell = this.getCell("Transaction");

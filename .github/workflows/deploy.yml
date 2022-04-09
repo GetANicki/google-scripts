@@ -1,10 +1,6 @@
 name: Build and Deploy
 
 on:
-  pull_request:
-    branches:
-      - develop
-      - main
   push:
     branches:
       - develop
@@ -13,6 +9,8 @@ on:
 jobs:
   Build:
     runs-on: ubuntu-latest
+
+    environment: "${{ endsWith(github.ref, 'main') && 'production' || 'develop' }}"
 
     steps:
       - name: Set variables
@@ -33,6 +31,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -61,3 +61,11 @@ jobs:
           scriptId: ${{ env.CLASP_SCRIPT_ID }}
           rootDir: "dist/NickiAdmin"
           command: "push"
+
+      - name: Release Version
+        id: version
+        if: endsWith(github.ref, 'main')
+        uses: paulhatch/semantic-version@v4.0.2
+        with:
+          bump_each_commit: true
+          change_path: "src"
