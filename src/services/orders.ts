@@ -11,6 +11,7 @@ import {
   OrderStatus,
   OrderStatuses,
 } from "../shared/types";
+import { CustomerEditor } from "./customers";
 import { getDrivers } from "./drivers";
 
 export const getOrders = (): OrderFormEntry[] => {
@@ -79,6 +80,10 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
     if (rowIndex === 1) throw Error("Unable to modify header row");
   }
 
+  assignCustomer = (customer: CustomerEditor | null) => {
+    this.setIfDifferent("Customer ID", customer?.get("Customer ID"));
+  };
+
   assignDriver = (driver: Driver | null) => {
     this.setIfDifferent("Nicki ID", driver?.driverId);
     this.setIfDifferent("Nicki", driver?.displayName);
@@ -100,7 +105,16 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
     this.getCell("Pickup Location").setDataValidation(locationValidation);
     this.getCell("Drop-off Location").setDataValidation(locationValidation);
 
-    // Set Nicki filters
+    // Set Customer filter
+    this.getCell("Customer").setDataValidation(
+      SpreadsheetApp.newDataValidation()
+        .requireValueInRange(
+          this.sheet.getRange(`'${config.CustomersSheetName}'!$B$2:$B`),
+        )
+        .build(),
+    );
+
+    // Set Nicki filter
     this.getCell("Nicki").setDataValidation(
       SpreadsheetApp.newDataValidation()
         .requireValueInRange(

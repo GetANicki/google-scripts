@@ -1,5 +1,14 @@
-import { Customer } from "../shared/types";
-import { get, getAll } from "./stripe";
+import { logMessage } from "../shared/audit";
+import config from "../shared/config";
+import { RowEditor } from "../shared/RowEditor";
+import { Customer, Product } from "../shared/types";
+import {
+  get,
+  getActivePlan,
+  getAll,
+  getProducts,
+  getSubscriptions,
+} from "./stripe";
 
 const cache: Record<string, Customer> = {};
 
@@ -16,10 +25,22 @@ export const getCustomerById = (customerId: string): Customer | null => {
   return null;
 };
 
-export const getCustomers = (): Customer[] => {
-  const custmers = getAll<Customer>("/customers", { limit: 100 }).sort((x, y) =>
-    x.displayName! > y.displayName! ? 1 : -1,
+export const getCustomersWithProduct = (): [Customer, Product | null][] => {
+  const products = getProducts();
+  const subscriptions = getSubscriptions();
+  const customers = getCustomers();
+
+  return customers.map(
+    (x) =>
+      [x, getActivePlan(x, products, subscriptions)] as [
+        Customer,
+        Product | null,
+      ],
   );
+};
+
+export const getCustomers = (): Customer[] => {
+  const custmers = getAll<Customer>("/customers", { limit: 100 });
 
   for (const c of custmers) {
     cache[c.id] = c;
@@ -27,3 +48,77 @@ export const getCustomers = (): Customer[] => {
 
   return custmers;
 };
+
+const CustomerColumns = [
+  "Customer ID",
+  "Display Name",
+  "First Name",
+  "Last Name",
+  "Phone",
+  "Email",
+  "Plan",
+  "Address",
+] as const;
+
+type CustomerColumn = typeof CustomerColumns[number];
+
+export class CustomerEditor extends RowEditor<CustomerColumn> {
+  constructor(row: number, sheet?: GoogleAppsScript.Spreadsheet.Sheet) {
+    super(CustomerEditor.getCustomersSheet(sheet), row);
+  }
+
+  remove = () => {
+    const customerId = this.get("Customer ID");
+    this.sheet.deleteRow(this.rowIndex);
+    logMessage(`Removed Customer ${customerId}`);
+  };
+
+  static add = (
+    entry: Record<CustomerColumn, string | number | null | undefined>,
+    sheetParam?: GoogleAppsScript.Spreadsheet.Sheet,
+  ): CustomerEditor => {
+    const sheet = CustomerEditor.getCustomersSheet(sheetParam);
+    sheet.appendRow(CustomerColumns.map((col) => entry[col] || ""));
+    return new CustomerEditor(sheet.getLastRow());
+  };
+
+  static findCustomerById = (
+    id: string,
+    sheet?: GoogleAppsScript.Spreadsheet.Sheet,
+  ): CustomerEditor | null => {
+    const rowIndex = RowEditor.findRowById(
+      CustomerEditor.getCustomersSheet(sheet),
+      id,
+    );
+    return rowIndex ? new CustomerEditor(rowIndex, sheet) : null;
+  };
+
+  static findCustomerByName = (
+    name: string,
+    sheet?: GoogleAppsScript.Spreadsheet.Sheet,
+  ) => {
+    const row = RowEditor.findRowByColumn<CustomerColumn>(
+      CustomerEditor.getCustomersSheet(sheet),
+      "Display Name",
+      name,
+    );
+    return row ? new CustomerEditor(row, sheet) : null;
+  };
+
+  static getCustomerIds = (sheet?: GoogleAppsScript.Spreadsheet.Sheet) =>
+    CustomerEditor.getCustomersSheet(sheet)
+      .getRange("A2:A")
+      .getDisplayValues()
+      .map(([x]) => x);
+
+  static getCustomersSheet = (
+    sheet?: GoogleAppsScript.Spreadsheet.Sheet,
+  ): GoogleAppsScript.Spreadsheet.Sheet =>
+    RowEditor.getSheet(config.CustomersSheetName, sheet);
+
+  static removeById = (id: string) =>
+    CustomerEditor.findCustomerById(id)?.remove();
+
+  static sort = () =>
+    CustomerEditor.getCustomersSheet().getRange("A2:G").sort(2);
+}

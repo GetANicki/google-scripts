@@ -26,8 +26,8 @@ export const menuItems: (
   },
   { name: "separator" },
   {
-    name: "Sync Customer Form Field",
-    function: "Nicki.menu_SyncCustomerFormField",
+    name: "Sync Customers",
+    function: "Nicki.menu_SyncCustomers",
   },
   {
     name: "Sync Location Form Field",

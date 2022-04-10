@@ -2,6 +2,7 @@ import {
   getLocations,
   HomeLocationName,
   NewLocationName,
+  sort as sortLocations,
 } from "../../services/locations";
 import { updateListField } from "../../shared/googleExt";
 import { Location, OrderEntryColumn } from "../../shared/types";
@@ -15,6 +16,8 @@ const updateLocationsField = (
   form: GoogleAppsScript.Forms.Form,
   locations: Location[],
 ) => {
+  sortLocations();
+
   const locationNames = [
     ...new Set([
       NewLocationName,

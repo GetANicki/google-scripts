@@ -48,7 +48,7 @@ export const getLocation = (
 
     return {
       address: onelineAddress(customer.address)!,
-      locationName: customer.displayName || customer.name,
+      locationName: customer.name,
       locationNo: `${customer?.id.replace(
         /$cus_/,
         "",
@@ -97,7 +97,8 @@ export const saveLocation = (location: Location): void => {
 
   const sheet = getLocationsSheet();
 
-  let editor = RowEditor.findById<LocationColumn>(sheet, location.locationNo!);
+  const rowId = RowEditor.findRowById(sheet, location.locationNo!);
+  let editor = rowId ? new RowEditor<LocationColumn>(sheet, rowId) : null;
 
   if (!editor) {
     editor = new RowEditor<LocationColumn>(
@@ -115,6 +116,8 @@ export const saveLocation = (location: Location): void => {
   if (location.latitude) editor.set("Latitude", location.latitude);
   if (location.longitude) editor.set("Longitude", location.longitude);
 };
+
+export const sort = () => getLocationsSheet().getRange("A3:G").sort(2);
 
 /**
  * @access package

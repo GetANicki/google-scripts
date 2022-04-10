@@ -1,7 +1,7 @@
 import { logError, notify } from "../../shared/audit";
 import config from "../../shared/config";
 import { syncCompletedOrders } from "./syncCompletedOrders";
-import { syncCustomerFormField } from "./syncCustomerFormField";
+import { syncCustomers } from "./syncCustomers";
 import { syncLocationFormField } from "./syncLocationFormField";
 import { updateOrderDrivers } from "./updateOrderDrivers";
 import { formatCurrentRow } from "./formatCurrentRow";
@@ -32,27 +32,19 @@ export function menu_UpdateDriverAssignments() {
   }
 }
 
-export function menu_SyncCustomerFormField() {
+export function menu_SyncCustomers() {
   try {
-    const timestamp = Date.now();
-    syncCustomerFormField(FormApp.openByUrl(config.OrderFormUrl));
-    notify(
-      "Synched customer form field",
-      `Elapsed: ${Date.now() - timestamp}ms`,
-    );
+    syncCustomers(FormApp.openByUrl(config.OrderFormUrl));
+    notify("Synched customers");
   } catch (error: any) {
-    logError("menu_SyncCustomerFormField", error);
+    logError("menu_SyncCustomers", error);
   }
 }
 
 export function menu_SyncLocationFormField() {
   try {
-    const timestamp = Date.now();
     syncLocationFormField(FormApp.openByUrl(config.OrderFormUrl));
-    notify(
-      "Synched location form field",
-      `Elapsed: ${Date.now() - timestamp}ms`,
-    );
+    notify("Synched location form field");
   } catch (error: any) {
     logError("menu_SyncLocationFormField", error);
   }

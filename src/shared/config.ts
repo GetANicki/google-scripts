@@ -1,5 +1,6 @@
 const config = {
   AuditSheetName: "Logs",
+  CustomersSheetName: "Customers",
   FileStorageFolderId: process.env.SAVED_FILES_FOLDER_ID!,
   LocationsSheetName: "Locations",
   NickiDataSpreadsheetUrl: process.env.NICKIDATA_SPREADSHEET!,

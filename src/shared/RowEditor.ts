@@ -9,10 +9,7 @@ export class RowEditor<TColumnsType extends string> {
   constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number) {
     this.rowIndex = rowIndex;
     this.sheet = sheet;
-    this.headers = sheet
-      .getRange("1:1")
-      .getValues()[0]
-      .map((x) => x.trim());
+    this.headers = RowEditor.getHeaders(sheet);
   }
 
   get = <T = string>(column: TColumnsType): T => {
@@ -43,12 +40,16 @@ export class RowEditor<TColumnsType extends string> {
     this.sheet.getRange(`${this.rowIndex}:${this.rowIndex}`);
 
   set = (column: TColumnsType, value: any): void => {
-    this.getCell(column).setValue(value);
+    const cell = this.getCell(column);
+    const current = cell.getDisplayValue();
+
+    cell.setValue(value);
 
     audit({
       type: "Change",
       column,
       newValue: value,
+      oldValue: current,
       sheet: `${this.sheet.getName()}:${this.rowIndex}`,
     });
   };
@@ -103,21 +104,50 @@ export class RowEditor<TColumnsType extends string> {
     return new RowEditor<TColumnsType>(range.getSheet(), range.getRowIndex());
   }
 
-  static findById<TColumnsType extends string>(
+  static findRowById = (
     sheet: GoogleAppsScript.Spreadsheet.Sheet,
     id: string,
-  ): RowEditor<TColumnsType> | null {
-    const locationNos = sheet
-      .getRange("A:A")
+  ): number | null => RowEditor.findRowByColumn(sheet, 1, id);
+
+  static findRowByColumn<TColumnsType extends string>(
+    sheet: GoogleAppsScript.Spreadsheet.Sheet,
+    column: TColumnsType | number,
+    value: string,
+    startingRow: number = 2,
+  ): number | null {
+    const columnIdx =
+      typeof column === "string"
+        ? RowEditor.getHeaders(sheet).indexOf(column) + 1
+        : column;
+
+    if (columnIdx === -1) {
+      throw Error(
+        `Unable to find column ${column} in sheet ${sheet.getName()}`,
+      );
+    }
+
+    const columnA1 = sheet
+      .getRange(1, columnIdx, 1, 1)
+      .getA1Notation()
+      .match(/([A-Z]+)/)?.[0];
+
+    const ids = sheet
+      .getRange(`${columnA1}${startingRow}:${columnA1}`)
       .getDisplayValues()
       .flatMap((x) => x);
 
-    const rowIndex = locationNos.indexOf(id);
+    const rowIndex = ids.indexOf(value);
 
     if (rowIndex === -1) return null;
 
-    return new RowEditor<TColumnsType>(sheet, rowIndex + 1);
+    return rowIndex + startingRow;
   }
+
+  static getHeaders = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>
+    sheet
+      .getRange("1:1")
+      .getValues()[0]
+      .map((x) => x.trim());
 
   static getSheet = (
     name: string,

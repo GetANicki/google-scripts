@@ -48,7 +48,6 @@ export interface Subscription {
 export interface Customer {
   id: string;
   name: string;
-  displayName?: string;
   phone?: string;
   email?: string;
   address?: Address;
