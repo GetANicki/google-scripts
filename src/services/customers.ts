@@ -86,9 +86,11 @@ export class CustomerEditor extends RowEditor<CustomerColumn> {
     id: string,
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,
   ): CustomerEditor | null => {
-    const rowIndex = RowEditor.findRowById(
+    const rowIndex = RowEditor.findRowByColumn(
       CustomerEditor.getCustomersSheet(sheet),
-      id,
+      1,
+      id?.trim()!,
+      2,
     );
     return rowIndex ? new CustomerEditor(rowIndex, sheet) : null;
   };
@@ -99,9 +101,11 @@ export class CustomerEditor extends RowEditor<CustomerColumn> {
   ) => {
     const row = RowEditor.findRowByColumn<CustomerColumn>(
       CustomerEditor.getCustomersSheet(sheet),
-      "Display Name",
+      2,
       name,
+      2,
     );
+    console.log(`[findCustomerByName](${name}) => ${row}`);
     return row ? new CustomerEditor(row, sheet) : null;
   };
 
@@ -110,6 +114,13 @@ export class CustomerEditor extends RowEditor<CustomerColumn> {
       .getRange("A2:A")
       .getDisplayValues()
       .map(([x]) => x);
+
+  static getCustomerNames = (sheet?: GoogleAppsScript.Spreadsheet.Sheet) =>
+    CustomerEditor.getCustomersSheet(sheet)
+      .getRange("B2:B")
+      .getDisplayValues()
+      .map(([x]) => x?.trim())
+      .filter((x) => !!x);
 
   static getCustomersSheet = (
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,

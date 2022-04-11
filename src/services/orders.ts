@@ -178,8 +178,10 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
 
   static newRow(
     rowIndex: number = 0,
-    values: Partial<Record<OrderEntryColumn, string | number | null>> = {},
+    values: Partial<Record<OrderEntryColumn, [string | number | null]>> = {},
   ) {
+    console.log(`OrderEditor.newRow(${rowIndex}, ${JSON.stringify(values)})`);
+
     if (!rowIndex) {
       rowIndex = OrderEditor.getOrdersSheet().getLastRow() + 1;
     }
@@ -203,12 +205,12 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
     }
 
     editor.assignCustomer(
-      CustomerEditor.findCustomerByName(values["Customer"] as string),
+      CustomerEditor.findCustomerByName(editor.get("Customer")?.trim()),
     );
 
     // set driver (or unassigned if none was provided)
     editor.assignDriver(
-      findDriverByName(values["Nicki"] as string) ||
+      findDriverByName(editor.get("Nicki")?.trim()) ||
         findDriverById(UnassignedDriverId),
     );
 
@@ -220,10 +222,13 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
 
     // copy the new locations if specified
     if (editor.get("Drop-off Location").trim() === NewLocationName) {
-      editor.set("Drop-off Location", values["New Drop-off Location"]);
+      editor.set(
+        "Drop-off Location",
+        editor.get("New Drop-off Location")?.trim(),
+      );
     }
     if (editor.get("Pickup Location").trim() === NewLocationName) {
-      editor.set("Pickup Location", values["New Pickup Location"]);
+      editor.set("Pickup Location", editor.get("New Pickup Location")?.trim());
     }
 
     // set default drop-off location to "Home"

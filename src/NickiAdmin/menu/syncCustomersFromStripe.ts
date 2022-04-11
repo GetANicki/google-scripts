@@ -2,7 +2,7 @@ import {
   CustomerEditor,
   getCustomersWithProduct,
 } from "../../services/customers";
-import { logError, logMessage, notify } from "../../shared/audit";
+import { logError, logMessage } from "../../shared/audit";
 import { Customer, Product } from "../../shared/types";
 import { onelineAddress } from "../../shared/util";
 
@@ -42,12 +42,7 @@ export const syncCustomersFromStripe = () => {
 
   CustomerEditor.sort();
 
-  notify(
-    `Synced ${syncCount} of ${totalStripeCustomers} Stripe customers`,
-    syncCount !== totalStripeCustomers
-      ? "See logs for error details"
-      : undefined,
-  );
+  logMessage(`Synced ${syncCount} of ${totalStripeCustomers} Stripe customers`);
 
   return stripeCustomers;
 };

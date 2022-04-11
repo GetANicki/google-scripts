@@ -17,6 +17,10 @@ export const menuItems: (
     function: "Nicki.menu_AddOrder",
   },
   {
+    name: "Upload File",
+    function: "Nicki.menu_UploadFile",
+  },
+  {
     name: "Sync OptimoRoute Nicki Assignments",
     function: "Nicki.menu_UpdateDriverAssignments",
   },
@@ -30,8 +34,12 @@ export const menuItems: (
   },
   { name: "separator" },
   {
-    name: "Sync Customers",
-    function: "Nicki.menu_SyncCustomers",
+    name: "Sync Customers from Stripe",
+    function: "Nicki.menu_SyncCustomersFromStripe",
+  },
+  {
+    name: "Sync Customers Form Field",
+    function: "Nicki.menu_SyncCustomerFormField",
   },
   {
     name: "Sync Location Form Field",

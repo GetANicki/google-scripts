@@ -97,7 +97,13 @@ export const saveLocation = (location: Location): void => {
 
   const sheet = getLocationsSheet();
 
-  const rowId = RowEditor.findRowById(sheet, location.locationNo!);
+  const rowId = RowEditor.findRowByColumn(
+    sheet,
+    1,
+    location.locationNo?.trim()!,
+    3,
+  );
+
   let editor = rowId ? new RowEditor<LocationColumn>(sheet, rowId) : null;
 
   if (!editor) {

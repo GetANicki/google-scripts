@@ -1,11 +1,16 @@
 import { logError, notify } from "../../shared/audit";
 import config from "../../shared/config";
 import { syncCompletedOrders } from "./syncCompletedOrders";
-import { syncCustomers } from "./syncCustomers";
+import { syncCustomerFormField } from "./syncCustomerFormField";
 import { syncLocationFormField } from "./syncLocationFormField";
 import { updateOrderDrivers } from "./updateOrderDrivers";
 import { formatCurrentRow } from "./formatCurrentRow";
 import { OrderEditor } from "../../services/orders";
+import uploadImageHtml from "./uploadImage/upload.html";
+import { syncCustomersFromStripe } from "./syncCustomersFromStripe";
+
+// Not a menu item, but used by a menu item
+export { uploadFile } from "./uploadImage/uploadFile";
 
 export function menu_AddOrder() {
   try {
@@ -14,6 +19,17 @@ export function menu_AddOrder() {
     notify(`Added new Order Row ${editor.rowIndex}`);
   } catch (error: any) {
     logError("menu_AddOrder", error);
+  }
+}
+
+export function menu_UploadFile() {
+  try {
+    SpreadsheetApp.getUi().showModalDialog(
+      HtmlService.createHtmlOutput(uploadImageHtml),
+      "Upload File",
+    );
+  } catch (error: any) {
+    logError("menu_UploadFile", error);
   }
 }
 
@@ -43,12 +59,22 @@ export function menu_UpdateDriverAssignments() {
   }
 }
 
-export function menu_SyncCustomers() {
+export function menu_SyncCustomersFromStripe() {
   try {
-    syncCustomers(FormApp.openByUrl(config.OrderFormUrl));
-    notify("Synched customers");
+    syncCustomersFromStripe();
+    notify("Synched customers from Stripe");
+    menu_SyncCustomerFormField();
   } catch (error: any) {
-    logError("menu_SyncCustomers", error);
+    logError("menu_SyncCustomersFromStripe", error);
+  }
+}
+
+export function menu_SyncCustomerFormField() {
+  try {
+    syncCustomerFormField(FormApp.openByUrl(config.OrderFormUrl));
+    notify("Synched customer form field");
+  } catch (error: any) {
+    logError("menu_SyncCustomerFormField", error);
   }
 }
 

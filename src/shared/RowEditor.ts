@@ -112,16 +112,11 @@ export class RowEditor<TColumnsType extends string> {
     return new RowEditor<TColumnsType>(range.getSheet(), range.getRowIndex());
   }
 
-  static findRowById = (
-    sheet: GoogleAppsScript.Spreadsheet.Sheet,
-    id: string,
-  ): number | null => RowEditor.findRowByColumn(sheet, 1, id);
-
   static findRowByColumn<TColumnsType extends string>(
     sheet: GoogleAppsScript.Spreadsheet.Sheet,
     column: TColumnsType | number,
     value: string,
-    startingRow: number = 2,
+    startingRow: number,
   ): number | null {
     const columnIdx =
       typeof column === "string"
@@ -148,7 +143,7 @@ export class RowEditor<TColumnsType extends string> {
 
     if (rowIndex === -1) return null;
 
-    return rowIndex + startingRow;
+    return rowIndex + 1 + startingRow;
   }
 
   static getHeaders = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>

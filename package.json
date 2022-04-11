@@ -39,6 +39,7 @@
     "dotenv-flow-webpack": "^1.1.0",
     "dotenv-webpack": "^7.1.0",
     "foreach-folder": "^1.1.0",
+    "html-loader": "^3.1.0",
     "husky": "^7.0.4",
     "jest": "^27.5.1",
     "json2csv": "^5.0.7",

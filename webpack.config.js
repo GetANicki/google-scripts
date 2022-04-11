@@ -32,6 +32,11 @@ module.exports = ({ development }) => ({
   module: {
     rules: [
       {
+        enforce: "pre",
+        test: /\.html$/,
+        loader: "html-loader",
+      },
+      {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: /node_modules/,

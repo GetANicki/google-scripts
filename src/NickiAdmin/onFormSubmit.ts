@@ -15,7 +15,7 @@ export function onFormSubmit({
   namedValues,
   range,
 }: Omit<GoogleAppsScript.Events.SheetsOnFormSubmit, "namedValues"> & {
-  namedValues: Record<OrderEntryColumn, string>;
+  namedValues: Record<OrderEntryColumn, [string | number | null]>;
 }) {
   const rowIndex = range.getRowIndex();
 
