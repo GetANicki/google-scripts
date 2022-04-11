@@ -13,8 +13,8 @@ export const menuItems: (
   | { name: "separator" }
 )[] = [
   {
-    name: "(Re)Format current row",
-    function: "Nicki.menu_FormatCurrentRow",
+    name: "Add new Order",
+    function: "Nicki.menu_AddOrder",
   },
   {
     name: "Sync OptimoRoute Nicki Assignments",
@@ -23,6 +23,10 @@ export const menuItems: (
   {
     name: "Sync Delivered Orders",
     function: "Nicki.menu_SyncCompletedOrders",
+  },
+  {
+    name: "(Re)Format current row",
+    function: "Nicki.menu_FormatCurrentRow",
   },
   { name: "separator" },
   {

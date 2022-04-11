@@ -8,11 +8,18 @@ import {
   OrderEntryColumn,
   OrderFormEntry,
   OrderPriorities,
+  OrderPriority,
   OrderStatus,
   OrderStatuses,
 } from "../shared/types";
 import { CustomerEditor } from "./customers";
-import { getDrivers } from "./drivers";
+import {
+  findDriverById,
+  findDriverByName,
+  getDrivers,
+  UnassignedDriverId,
+} from "./drivers";
+import { HomeLocationName, NewLocationName } from "./locations";
 
 export const getOrders = (): OrderFormEntry[] => {
   const sheet = OrderEditor.getOrdersSheet();
@@ -81,7 +88,21 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
   }
 
   assignCustomer = (customer: CustomerEditor | null) => {
-    this.setIfDifferent("Customer ID", customer?.get("Customer ID"));
+    this.set("Customer ID", customer?.get("Customer ID"));
+    this.set("Membership", customer?.get("Plan"));
+
+    this.set(
+      "Drop-off Phone Number",
+      customer?.get("Phone") ? `'${customer?.get("Phone")}` : "",
+    );
+
+    // "Home" isn't a valid location if the customer doesn't have an address
+    if (!customer?.get("Address")) {
+      if (this.get("Pickup Location") === HomeLocationName)
+        this.set("Pickup Location", "");
+      if (this.get("Drop-off Location") === HomeLocationName)
+        this.set("Drop-off Location", "");
+    }
   };
 
   assignDriver = (driver: Driver | null) => {
@@ -95,6 +116,7 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       .requireValueInList([...OrderStatuses])
       .build();
     this.getCell("Status").setDataValidation(statusValidation);
+    this.setColumnWidth("Status", 100);
 
     // Set location filters
     const locationValidation = SpreadsheetApp.newDataValidation()
@@ -128,7 +150,7 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       .requireValueInList([...OrderPriorities])
       .build();
     this.getCell("Priority").setDataValidation(priorityValidation);
-    this.setColumnWidth("Priority", 70);
+    this.setColumnWidth("Priority", 75);
 
     // set formulas in calculated fields
     const transactionCell = this.getCell("Transaction");
@@ -153,6 +175,70 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       `=${nickiGrossCell.getA1Notation()} - ${transactionCell.getA1Notation()}`,
     );
   };
+
+  static newRow(
+    rowIndex: number = 0,
+    values: Partial<Record<OrderEntryColumn, string | number | null>> = {},
+  ) {
+    if (!rowIndex) {
+      rowIndex = OrderEditor.getOrdersSheet().getLastRow() + 1;
+    }
+
+    const editor = new OrderEditor(rowIndex);
+
+    const timestamp = Date.now();
+    const timestampDate = new Date(timestamp);
+
+    if (!editor.get("Created")) {
+      editor.setDate("Created", timestampDate);
+      editor.set("Status", "Draft" as OrderStatus);
+    }
+
+    const pickupDate = editor.get("Pickup Date");
+    console.log("Pickup date", typeof pickupDate, pickupDate);
+    // default date to today if not specified
+    if (!pickupDate) {
+      editor.setDate("Pickup Date", timestampDate);
+      console.log("Pickup date not set - defaulting to today");
+    }
+
+    editor.assignCustomer(
+      CustomerEditor.findCustomerByName(values["Customer"] as string),
+    );
+
+    // set driver (or unassigned if none was provided)
+    editor.assignDriver(
+      findDriverByName(values["Nicki"] as string) ||
+        findDriverById(UnassignedDriverId),
+    );
+
+    // Default Priority
+    editor.set(
+      "Priority",
+      editor.get("Priority") || ("Medium" as OrderPriority),
+    );
+
+    // copy the new locations if specified
+    if (editor.get("Drop-off Location").trim() === NewLocationName) {
+      editor.set("Drop-off Location", values["New Drop-off Location"]);
+    }
+    if (editor.get("Pickup Location").trim() === NewLocationName) {
+      editor.set("Pickup Location", values["New Pickup Location"]);
+    }
+
+    // set default drop-off location to "Home"
+    if (!editor.get("Drop-off Location")) {
+      editor.set("Drop-off Location", HomeLocationName);
+    }
+
+    try {
+      editor.formatCells();
+    } catch (ex: any) {
+      logError("Failed to format cells", ex);
+    }
+
+    return editor;
+  }
 
   static getOrdersSheet = (
     sheet?: GoogleAppsScript.Spreadsheet.Sheet | undefined,

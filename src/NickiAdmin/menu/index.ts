@@ -5,6 +5,17 @@ import { syncCustomers } from "./syncCustomers";
 import { syncLocationFormField } from "./syncLocationFormField";
 import { updateOrderDrivers } from "./updateOrderDrivers";
 import { formatCurrentRow } from "./formatCurrentRow";
+import { OrderEditor } from "../../services/orders";
+
+export function menu_AddOrder() {
+  try {
+    const editor = OrderEditor.newRow();
+    editor.setActive("Customer");
+    notify(`Added new Order Row ${editor.rowIndex}`);
+  } catch (error: any) {
+    logError("menu_AddOrder", error);
+  }
+}
 
 export function menu_FormatCurrentRow() {
   try {

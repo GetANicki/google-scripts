@@ -2,7 +2,7 @@ import { audit, logError } from "./audit";
 import config from "./config";
 
 export class RowEditor<TColumnsType extends string> {
-  protected readonly rowIndex: number;
+  readonly rowIndex: number;
   protected readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
   protected readonly headers: TColumnsType[];
 
@@ -52,6 +52,14 @@ export class RowEditor<TColumnsType extends string> {
       oldValue: current,
       sheet: `${this.sheet.getName()}:${this.rowIndex}`,
     });
+  };
+
+  setActive = (column?: TColumnsType) => {
+    const colIndx = column ? this.headers.indexOf(column) + 1 : 1;
+    this.sheet
+      .getRange(this.rowIndex, colIndx)
+      .activateAsCurrentCell()
+      .activate();
   };
 
   setDate = (column: TColumnsType, value: Date): void =>
@@ -149,7 +157,7 @@ export class RowEditor<TColumnsType extends string> {
       .getValues()[0]
       .map((x) => x.trim());
 
-  static getSheet = (
+  protected static getSheet = (
     name: string,
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,
   ): GoogleAppsScript.Spreadsheet.Sheet =>
