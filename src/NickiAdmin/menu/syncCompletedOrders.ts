@@ -7,6 +7,7 @@ import {
 import { getOrders, OrderEditor } from "../../services/orders";
 import { logError, logMessage } from "../../shared/audit";
 import { OrderFormEntry, OrderStatus } from "../../shared/types";
+import { trim } from "../../shared/util";
 
 const OrderStatusesToSync: OrderStatus[] = ["Scheduled", "Delivered"];
 
@@ -32,8 +33,8 @@ export const syncCompletedOrders = () => {
   );
 
   for (const detail of completedOrders) {
-    const orderId = detail.orderNo.trim().replace(/_D$/, "");
-    const order = ordersToSync.find((x) => x.orderId.trim() === orderId);
+    const orderId = trim(detail.orderNo)?.replace(/_D$/, "");
+    const order = ordersToSync.find((x) => trim(x.orderId) === orderId);
 
     if (order) {
       syncCompletedOrder(detail, order);

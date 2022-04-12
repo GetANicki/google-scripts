@@ -1,4 +1,5 @@
 import { CustomerEditor } from "../../services/customers";
+import { trim } from "../../shared/util";
 import { orderEditHandler } from "./orderEditHandler";
 
 export const orderCustomerChangeHandler = orderEditHandler(
@@ -6,7 +7,7 @@ export const orderCustomerChangeHandler = orderEditHandler(
     switch (column) {
       case "Customer":
         editor.assignCustomer(
-          CustomerEditor.findCustomerByName(newValue.trim()),
+          CustomerEditor.findCustomerByName(trim(newValue)),
         );
         break;
     }

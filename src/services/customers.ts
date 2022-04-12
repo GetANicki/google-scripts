@@ -1,7 +1,15 @@
 import { logMessage } from "../shared/audit";
 import config from "../shared/config";
+import { readSpreadsheet } from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
-import { Customer, Product } from "../shared/types";
+import {
+  Customer,
+  SheetCustomerColumn,
+  SheetCustomerColumns,
+  Product,
+  SheetCustomer,
+} from "../shared/types";
+import { trim } from "../shared/util";
 import {
   get,
   getActivePlan,
@@ -49,20 +57,7 @@ export const getCustomers = (): Customer[] => {
   return custmers;
 };
 
-const CustomerColumns = [
-  "Customer ID",
-  "Display Name",
-  "First Name",
-  "Last Name",
-  "Phone",
-  "Email",
-  "Plan",
-  "Address",
-] as const;
-
-type CustomerColumn = typeof CustomerColumns[number];
-
-export class CustomerEditor extends RowEditor<CustomerColumn> {
+export class CustomerEditor extends RowEditor<SheetCustomerColumn> {
   constructor(row: number, sheet?: GoogleAppsScript.Spreadsheet.Sheet) {
     super(CustomerEditor.getCustomersSheet(sheet), row);
   }
@@ -74,11 +69,15 @@ export class CustomerEditor extends RowEditor<CustomerColumn> {
   };
 
   static add = (
-    entry: Record<CustomerColumn, string | number | null | undefined>,
+    entry: Record<SheetCustomerColumn, string | number | null | undefined>,
     sheetParam?: GoogleAppsScript.Spreadsheet.Sheet,
   ): CustomerEditor => {
     const sheet = CustomerEditor.getCustomersSheet(sheetParam);
-    sheet.appendRow(CustomerColumns.map((col) => entry[col] || ""));
+    sheet.appendRow(
+      SheetCustomerColumns.map((col) =>
+        col === "Phone" && !!entry[col] ? `'${entry[col]}` : entry[col] || "",
+      ),
+    );
     return new CustomerEditor(sheet.getLastRow());
   };
 
@@ -89,7 +88,7 @@ export class CustomerEditor extends RowEditor<CustomerColumn> {
     const rowIndex = RowEditor.findRowByColumn(
       CustomerEditor.getCustomersSheet(sheet),
       1,
-      id?.trim()!,
+      trim(id)!,
       2,
     );
     return rowIndex ? new CustomerEditor(rowIndex, sheet) : null;
@@ -99,27 +98,33 @@ export class CustomerEditor extends RowEditor<CustomerColumn> {
     name: string,
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,
   ) => {
-    const row = RowEditor.findRowByColumn<CustomerColumn>(
+    const row = RowEditor.findRowByColumn<SheetCustomerColumn>(
       CustomerEditor.getCustomersSheet(sheet),
       2,
-      name,
+      trim(name),
       2,
     );
     console.log(`[findCustomerByName](${name}) => ${row}`);
     return row ? new CustomerEditor(row, sheet) : null;
   };
 
+  static getAll = (sheet?: GoogleAppsScript.Spreadsheet.Sheet) =>
+    readSpreadsheet<SheetCustomer>(
+      CustomerEditor.getCustomersSheet(sheet),
+    ).filter((x) => !!x.customerId);
+
   static getCustomerIds = (sheet?: GoogleAppsScript.Spreadsheet.Sheet) =>
     CustomerEditor.getCustomersSheet(sheet)
       .getRange("A2:A")
       .getDisplayValues()
-      .map(([x]) => x);
+      .map(([x]) => x)
+      .filter((x) => !!x);
 
   static getCustomerNames = (sheet?: GoogleAppsScript.Spreadsheet.Sheet) =>
     CustomerEditor.getCustomersSheet(sheet)
       .getRange("B2:B")
       .getDisplayValues()
-      .map(([x]) => x?.trim())
+      .map(([x]) => trim(x))
       .filter((x) => !!x);
 
   static getCustomersSheet = (

@@ -14,14 +14,14 @@ export function readSpreadsheet<T>(
 export function parseSpreadsheetValues<T>(
   headers: string[],
   rows: string[][],
-): T[] {
-  return rows.map((row) =>
+): (T & { __row: number })[] {
+  return rows.map((row, idx) =>
     headers.reduce(
       (obj, header) => ({
         ...obj,
         [camelcase(header)]: row[headers.indexOf(header)],
       }),
-      {} as T,
+      { __row: idx + 2 } as T & { __row: number }, // +2 = +1 for 0->1 based index, +1 to skip header row
     ),
   );
 }

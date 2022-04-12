@@ -2,6 +2,8 @@ import { audit, logError } from "./audit";
 import config from "./config";
 
 export class RowEditor<TColumnsType extends string> {
+  static SheetHeaders: Record<string, string[]> = {};
+
   readonly rowIndex: number;
   protected readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
   protected readonly headers: TColumnsType[];
@@ -9,7 +11,11 @@ export class RowEditor<TColumnsType extends string> {
   constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number) {
     this.rowIndex = rowIndex;
     this.sheet = sheet;
-    this.headers = RowEditor.getHeaders(sheet);
+
+    const sheetName = sheet.getName();
+    this.headers = RowEditor.SheetHeaders[sheetName] =
+      (RowEditor.SheetHeaders[sheetName] as TColumnsType[]) ||
+      RowEditor.getHeaders(sheet);
   }
 
   get = <T = string>(column: TColumnsType): T => {
@@ -143,7 +149,7 @@ export class RowEditor<TColumnsType extends string> {
 
     if (rowIndex === -1) return null;
 
-    return rowIndex + 1 + startingRow;
+    return rowIndex + startingRow;
   }
 
   static getHeaders = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>

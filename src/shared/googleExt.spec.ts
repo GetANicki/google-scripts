@@ -57,7 +57,7 @@ describe("googleExt", () => {
       ]);
     });
 
-    it("should ignore empty rows", () => {
+    it.skip("should ignore empty rows", () => {
       expect(
         parseSpreadsheetValues(
           ["Awesome", "Cool"],

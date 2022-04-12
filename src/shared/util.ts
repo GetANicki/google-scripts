@@ -25,7 +25,7 @@ export const shortDate = (date: Date | null): string | null =>
 export const onelineAddress = (
   address: Address | null | undefined,
 ): string | null =>
-  address
+  !!address?.line1
     ? [
         `${address.line1} ${address.line2}`.trim(),
         address.city,
@@ -34,3 +34,9 @@ export const onelineAddress = (
         address.country,
       ].join(", ")
     : null;
+
+export const trim = (val: any) => {
+  if (val == null || val == undefined) return "";
+  if (typeof val === "string") return val.trim();
+  return val;
+};

@@ -49,3 +49,4 @@ export const menuItems: (
 
 // FOR TESTING:
 export { saveLocation, getLocation } from "../services/locations";
+export { CustomerEditor } from "../services/customers";
