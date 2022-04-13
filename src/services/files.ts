@@ -1,12 +1,5 @@
 import config from "../shared/config";
 
-interface SaveFileRequest {
-  contents: string;
-  mimeType?: string | null;
-  filename: string;
-  folder: string;
-}
-
 export interface SaveFileResponse {
   fileUrl: string;
   folderUrl: string;
@@ -33,8 +26,12 @@ export const saveFile = (
 
   if (folder) console.log("Got file folder");
 
-  const file = folder.createFile(blob);
-  if (file) console.log("Created file", file.getUrl());
+  const existingFiles = folder.getFilesByName(blob.getName());
+  const existingFile = existingFiles.hasNext() ? existingFiles.next() : null;
+
+  const file = existingFile || folder.createFile(blob);
+
+  if (!existingFile) console.log("Created file", file.getUrl());
 
   return { fileUrl: file.getDownloadUrl(), folderUrl: folder.getUrl() };
 };

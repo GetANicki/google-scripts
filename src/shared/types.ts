@@ -93,7 +93,7 @@ export interface OrderDriver {
 export const OrderStatuses = [
   "Draft",
   "Confirmed",
-  "Scheduled",
+  "Created",
   "Delivered",
   "Invoiced",
   "Paid",
@@ -204,3 +204,5 @@ export interface ValueChangeAuditEntry extends AuditEntry {
   newValue: string;
   oldValue?: string;
 }
+
+export type Row<T> = T & { __row: number };

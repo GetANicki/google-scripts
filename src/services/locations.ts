@@ -2,7 +2,7 @@ import { Address } from "cluster";
 import config from "../shared/config";
 import { readSpreadsheet } from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
-import { Customer, Location } from "../shared/types";
+import { Customer, Location, Row } from "../shared/types";
 import { onelineAddress } from "../shared/util";
 import { getCustomerById } from "./customers";
 
@@ -64,7 +64,8 @@ export const getLocation = (
 
   if (location) {
     console.log(`Found location matching ${addressOrLocationName}`);
-    return location;
+    const { __row, ...toReturn } = location;
+    return toReturn;
   }
 
   console.log(`Unable to find location matching ${addressOrLocationName}`);
@@ -76,7 +77,7 @@ export const queryLocation = (predicate: (location: Location) => boolean) =>
 
 export const getLocations = (
   sheet?: GoogleAppsScript.Spreadsheet.Sheet,
-): Location[] => readSpreadsheet<Location>(sheet || getLocationsSheet());
+): Row<Location>[] => readSpreadsheet<Location>(sheet || getLocationsSheet());
 
 const getLocationsSheet = (): GoogleAppsScript.Spreadsheet.Sheet =>
   SpreadsheetApp.openByUrl(config.NickiDataSpreadsheetUrl).getSheetByName(

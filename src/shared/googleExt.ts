@@ -1,8 +1,9 @@
 import camelcase from "camelcase";
+import { Row } from "./types";
 
 export function readSpreadsheet<T>(
   ss: GoogleAppsScript.Spreadsheet.Sheet,
-): T[] {
+): Row<T>[] {
   const [headers, ...values] = ss?.getDataRange()?.getDisplayValues() || [
     [],
     [],
@@ -14,14 +15,14 @@ export function readSpreadsheet<T>(
 export function parseSpreadsheetValues<T>(
   headers: string[],
   rows: string[][],
-): (T & { __row: number })[] {
+): Row<T>[] {
   return rows.map((row, idx) =>
     headers.reduce(
       (obj, header) => ({
         ...obj,
         [camelcase(header)]: row[headers.indexOf(header)],
       }),
-      { __row: idx + 2 } as T & { __row: number }, // +2 = +1 for 0->1 based index, +1 to skip header row
+      { __row: idx + 2 } as Row<T>, // +2 = +1 for 0->1 based index, +1 to skip header row
     ),
   );
 }

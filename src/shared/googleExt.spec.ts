@@ -32,7 +32,7 @@ describe("googleExt", () => {
     it("should parse spreadsheet values with empty cells", () => {
       const [headers, ...rows] = [
         ["Order ID", "Status", "Notes"],
-        ["cus_LHejWZ80NfdZkb_1648581971144", "Scheduled", ""],
+        ["cus_LHejWZ80NfdZkb_1648581971144", "Created", ""],
       ];
 
       const objects = parseSpreadsheetValues(headers, rows);
@@ -40,7 +40,7 @@ describe("googleExt", () => {
       expect(objects).toMatchObject([
         {
           orderId: "cus_LHejWZ80NfdZkb_1648581971144",
-          status: "Scheduled",
+          status: "Created",
           notes: "",
         },
       ]);
