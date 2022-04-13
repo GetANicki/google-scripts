@@ -2,17 +2,20 @@ import { audit, logError } from "./audit";
 import config from "./config";
 
 export class RowEditor<TColumnsType extends string> {
-  protected readonly rowIndex: number;
+  static SheetHeaders: Record<string, string[]> = {};
+
+  readonly rowIndex: number;
   protected readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
   protected readonly headers: TColumnsType[];
 
   constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number) {
     this.rowIndex = rowIndex;
     this.sheet = sheet;
-    this.headers = sheet
-      .getRange("1:1")
-      .getValues()[0]
-      .map((x) => x.trim());
+
+    const sheetName = sheet.getName();
+    this.headers = RowEditor.SheetHeaders[sheetName] =
+      (RowEditor.SheetHeaders[sheetName] as TColumnsType[]) ||
+      RowEditor.getHeaders(sheet);
   }
 
   get = <T = string>(column: TColumnsType): T => {
@@ -43,14 +46,26 @@ export class RowEditor<TColumnsType extends string> {
     this.sheet.getRange(`${this.rowIndex}:${this.rowIndex}`);
 
   set = (column: TColumnsType, value: any): void => {
-    this.getCell(column).setValue(value);
+    const cell = this.getCell(column);
+    const current = cell.getDisplayValue();
+
+    cell.setValue(value);
 
     audit({
       type: "Change",
       column,
       newValue: value,
+      oldValue: current,
       sheet: `${this.sheet.getName()}:${this.rowIndex}`,
     });
+  };
+
+  setActive = (column?: TColumnsType) => {
+    const colIndx = column ? this.headers.indexOf(column) + 1 : 1;
+    this.sheet
+      .getRange(this.rowIndex, colIndx)
+      .activateAsCurrentCell()
+      .activate();
   };
 
   setDate = (column: TColumnsType, value: Date): void =>
@@ -103,23 +118,47 @@ export class RowEditor<TColumnsType extends string> {
     return new RowEditor<TColumnsType>(range.getSheet(), range.getRowIndex());
   }
 
-  static findById<TColumnsType extends string>(
+  static findRowByColumn<TColumnsType extends string>(
     sheet: GoogleAppsScript.Spreadsheet.Sheet,
-    id: string,
-  ): RowEditor<TColumnsType> | null {
-    const locationNos = sheet
-      .getRange("A:A")
+    column: TColumnsType | number,
+    value: string,
+    startingRow: number,
+  ): number | null {
+    const columnIdx =
+      typeof column === "string"
+        ? RowEditor.getHeaders(sheet).indexOf(column) + 1
+        : column;
+
+    if (columnIdx === -1) {
+      throw Error(
+        `Unable to find column ${column} in sheet ${sheet.getName()}`,
+      );
+    }
+
+    const columnA1 = sheet
+      .getRange(1, columnIdx, 1, 1)
+      .getA1Notation()
+      .match(/([A-Z]+)/)?.[0];
+
+    const ids = sheet
+      .getRange(`${columnA1}${startingRow}:${columnA1}`)
       .getDisplayValues()
       .flatMap((x) => x);
 
-    const rowIndex = locationNos.indexOf(id);
+    const rowIndex = ids.indexOf(value);
 
     if (rowIndex === -1) return null;
 
-    return new RowEditor<TColumnsType>(sheet, rowIndex + 1);
+    return rowIndex + startingRow;
   }
 
-  static getSheet = (
+  static getHeaders = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>
+    sheet
+      .getRange("1:1")
+      .getValues()[0]
+      .map((x) => x.trim());
+
+  protected static getSheet = (
     name: string,
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,
   ): GoogleAppsScript.Spreadsheet.Sheet =>

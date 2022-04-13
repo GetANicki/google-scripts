@@ -47,7 +47,7 @@ export const audit = (entry: MessageAuditEntry | ValueChangeAuditEntry) => {
   if (entry.type === "Error" || entry.type === "Notification") {
     try {
       SpreadsheetApp.getUi().alert(
-        `${entry.message}\r\n${entry.details}`.trim(),
+        [entry.message, entry.details].join("\r\n").trim(),
       );
     } catch (ex) {
       // NOOP

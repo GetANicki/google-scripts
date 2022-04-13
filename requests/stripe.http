@@ -12,7 +12,11 @@ GET https://api.stripe.com/v1/customers/{{testCustomerId}}
 Authorization: Bearer {{apiKey}}
 
 
-### Get subscriptions
+### Get all subscriptions
+GET https://api.stripe.com/v1/subscriptions
+Authorization: Bearer {{apiKey}}
+
+### Get customer subscriptions
 GET https://api.stripe.com/v1/subscriptions?customer={{testCustomerId}}
 Authorization: Bearer {{apiKey}}
 

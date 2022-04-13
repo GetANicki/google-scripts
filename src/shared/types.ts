@@ -48,11 +48,35 @@ export interface Subscription {
 export interface Customer {
   id: string;
   name: string;
-  displayName?: string;
   phone?: string;
   email?: string;
   address?: Address;
 }
+
+export interface SheetCustomer {
+  __row?: number;
+  customerId: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  plan: string;
+  address: string;
+}
+
+export const SheetCustomerColumns = [
+  "Customer ID",
+  "Display Name",
+  "First Name",
+  "Last Name",
+  "Phone",
+  "Email",
+  "Plan",
+  "Address",
+] as const;
+
+export type SheetCustomerColumn = typeof SheetCustomerColumns[number];
 
 export interface Driver {
   driverId: string;
@@ -69,7 +93,7 @@ export interface OrderDriver {
 export const OrderStatuses = [
   "Draft",
   "Confirmed",
-  "Scheduled",
+  "Created",
   "Delivered",
   "Invoiced",
   "Paid",
@@ -180,3 +204,5 @@ export interface ValueChangeAuditEntry extends AuditEntry {
   newValue: string;
   oldValue?: string;
 }
+
+export type Row<T> = T & { __row: number };

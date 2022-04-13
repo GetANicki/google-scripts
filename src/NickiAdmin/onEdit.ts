@@ -2,9 +2,14 @@ import config from "../shared/config";
 import { logError, logMessage } from "../shared/audit";
 import { RowEditor } from "../shared/RowEditor";
 import { orderStatusHandler } from "./editHandlers/orderStatusHandler";
-import { driverAssignmentHandler } from "./editHandlers/driverAssignmentHandler";
+import { orderDriverAssignmentHandler } from "./editHandlers/orderDriverAssignmentHandler";
+import { orderCustomerChangeHandler } from "./editHandlers/orderCustomerChangeHandler";
 
-const handlers = [orderStatusHandler, driverAssignmentHandler];
+const handlers = [
+  orderStatusHandler,
+  orderDriverAssignmentHandler,
+  orderCustomerChangeHandler,
+];
 
 export function onEdit(evt: GoogleAppsScript.Events.SheetsOnEdit) {
   const sheetName = evt.range.getSheet().getName();

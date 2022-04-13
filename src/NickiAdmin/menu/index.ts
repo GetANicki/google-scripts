@@ -5,6 +5,33 @@ import { syncCustomerFormField } from "./syncCustomerFormField";
 import { syncLocationFormField } from "./syncLocationFormField";
 import { updateOrderDrivers } from "./updateOrderDrivers";
 import { formatCurrentRow } from "./formatCurrentRow";
+import { OrderEditor } from "../../services/orders";
+import uploadImageHtml from "./uploadImage/upload.html";
+import { syncCustomersFromStripe } from "./syncCustomersFromStripe";
+
+// Not a menu item, but used by a menu item
+export { uploadFile } from "./uploadImage/uploadFile";
+
+export function menu_AddOrder() {
+  try {
+    const editor = OrderEditor.newRow();
+    editor.setActive("Customer");
+    notify(`Added new Order Row ${editor.rowIndex}`);
+  } catch (error: any) {
+    logError("menu_AddOrder", error);
+  }
+}
+
+export function menu_UploadFile() {
+  try {
+    SpreadsheetApp.getUi().showModalDialog(
+      HtmlService.createHtmlOutput(uploadImageHtml),
+      "Upload File",
+    );
+  } catch (error: any) {
+    logError("menu_UploadFile", error);
+  }
+}
 
 export function menu_FormatCurrentRow() {
   try {
@@ -32,14 +59,20 @@ export function menu_UpdateDriverAssignments() {
   }
 }
 
+export function menu_SyncCustomersFromStripe() {
+  try {
+    syncCustomersFromStripe();
+    notify("Synched customers from Stripe");
+    menu_SyncCustomerFormField();
+  } catch (error: any) {
+    logError("menu_SyncCustomersFromStripe", error);
+  }
+}
+
 export function menu_SyncCustomerFormField() {
   try {
-    const timestamp = Date.now();
     syncCustomerFormField(FormApp.openByUrl(config.OrderFormUrl));
-    notify(
-      "Synched customer form field",
-      `Elapsed: ${Date.now() - timestamp}ms`,
-    );
+    notify("Synched customer form field");
   } catch (error: any) {
     logError("menu_SyncCustomerFormField", error);
   }
@@ -47,12 +80,8 @@ export function menu_SyncCustomerFormField() {
 
 export function menu_SyncLocationFormField() {
   try {
-    const timestamp = Date.now();
     syncLocationFormField(FormApp.openByUrl(config.OrderFormUrl));
-    notify(
-      "Synched location form field",
-      `Elapsed: ${Date.now() - timestamp}ms`,
-    );
+    notify("Synched location form field");
   } catch (error: any) {
     logError("menu_SyncLocationFormField", error);
   }

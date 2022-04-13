@@ -7,8 +7,9 @@ import {
 import { getOrders, OrderEditor } from "../../services/orders";
 import { logError, logMessage } from "../../shared/audit";
 import { OrderFormEntry, OrderStatus } from "../../shared/types";
+import { trim } from "../../shared/util";
 
-const OrderStatusesToSync: OrderStatus[] = ["Scheduled", "Delivered"];
+const OrderStatusesToSync: OrderStatus[] = ["Created", "Delivered"];
 
 export const syncCompletedOrders = () => {
   const ordersToSync = getOrders().filter((x) =>
@@ -32,8 +33,8 @@ export const syncCompletedOrders = () => {
   );
 
   for (const detail of completedOrders) {
-    const orderId = detail.orderNo.trim().replace(/_D$/, "");
-    const order = ordersToSync.find((x) => x.orderId.trim() === orderId);
+    const orderId = trim(detail.orderNo)?.replace(/_D$/, "");
+    const order = ordersToSync.find((x) => trim(x.orderId) === orderId);
 
     if (order) {
       syncCompletedOrder(detail, order);
@@ -52,18 +53,18 @@ const syncCompletedOrder = (
   const editor = new OrderEditor(order.row);
 
   if (isDelivery) {
-    editor.set("Status", "Delivered" as OrderStatus);
-    editor.set("Delivered UTC", data?.endTime?.utcTime || "");
+    editor.setIfDifferent("Status", "Delivered" as OrderStatus);
+    editor.setIfDifferent("Delivered UTC", data?.endTime?.utcTime || "");
   }
   // otherwise it's pickup
   else {
-    editor.set("Picked Up UTC", data?.endTime?.utcTime || "");
+    editor.setIfDifferent("Picked Up UTC", data?.endTime?.utcTime || "");
 
     saveReceipts(editor, data?.form?.images || []);
 
     const deliveryNote = data?.form?.note;
     if (/\$?[0-9.,]*/.test(deliveryNote || "")) {
-      editor.set("Transaction", deliveryNote);
+      editor.setIfDifferent("Transaction", deliveryNote);
     }
   }
 };

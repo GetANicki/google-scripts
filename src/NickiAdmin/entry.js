@@ -18,6 +18,10 @@ function handleEdit(e) {
   Nicki.onEdit(e);
 }
 
+function uploadFile(e) {
+  Nicki.uploadFile(e);
+}
+
 function test() {
   Nicki.saveLocation({ address: "1087 Country Hills Rd, Yardley, PA 19067" });
 }

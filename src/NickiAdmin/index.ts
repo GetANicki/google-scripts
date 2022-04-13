@@ -13,8 +13,12 @@ export const menuItems: (
   | { name: "separator" }
 )[] = [
   {
-    name: "(Re)Format current row",
-    function: "Nicki.menu_FormatCurrentRow",
+    name: "Add new Order",
+    function: "Nicki.menu_AddOrder",
+  },
+  {
+    name: "Upload File",
+    function: "Nicki.menu_UploadFile",
   },
   {
     name: "Sync OptimoRoute Nicki Assignments",
@@ -24,9 +28,17 @@ export const menuItems: (
     name: "Sync Delivered Orders",
     function: "Nicki.menu_SyncCompletedOrders",
   },
+  {
+    name: "(Re)Format current row",
+    function: "Nicki.menu_FormatCurrentRow",
+  },
   { name: "separator" },
   {
-    name: "Sync Customer Form Field",
+    name: "Sync Customers from Stripe",
+    function: "Nicki.menu_SyncCustomersFromStripe",
+  },
+  {
+    name: "Sync Customers Form Field",
     function: "Nicki.menu_SyncCustomerFormField",
   },
   {
@@ -37,3 +49,4 @@ export const menuItems: (
 
 // FOR TESTING:
 export { saveLocation, getLocation } from "../services/locations";
+export { CustomerEditor } from "../services/customers";

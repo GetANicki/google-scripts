@@ -8,10 +8,18 @@ import {
   OrderEntryColumn,
   OrderFormEntry,
   OrderPriorities,
+  OrderPriority,
   OrderStatus,
   OrderStatuses,
 } from "../shared/types";
-import { getDrivers } from "./drivers";
+import { CustomerEditor } from "./customers";
+import {
+  findDriverById,
+  findDriverByName,
+  getDrivers,
+  UnassignedDriverId,
+} from "./drivers";
+import { HomeLocationName, NewLocationName } from "./locations";
 
 export const getOrders = (): OrderFormEntry[] => {
   const sheet = OrderEditor.getOrdersSheet();
@@ -79,6 +87,24 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
     if (rowIndex === 1) throw Error("Unable to modify header row");
   }
 
+  assignCustomer = (customer: CustomerEditor | null) => {
+    this.set("Customer ID", customer?.get("Customer ID"));
+    this.set("Membership", customer?.get("Plan"));
+
+    this.set(
+      "Drop-off Phone Number",
+      customer?.get("Phone") ? `'${customer?.get("Phone")}` : "",
+    );
+
+    // "Home" isn't a valid location if the customer doesn't have an address
+    if (!customer?.get("Address")) {
+      if (this.get("Pickup Location") === HomeLocationName)
+        this.set("Pickup Location", "");
+      if (this.get("Drop-off Location") === HomeLocationName)
+        this.set("Drop-off Location", "");
+    }
+  };
+
   assignDriver = (driver: Driver | null) => {
     this.setIfDifferent("Nicki ID", driver?.driverId);
     this.setIfDifferent("Nicki", driver?.displayName);
@@ -90,6 +116,7 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       .requireValueInList([...OrderStatuses])
       .build();
     this.getCell("Status").setDataValidation(statusValidation);
+    this.setColumnWidth("Status", 100);
 
     // Set location filters
     const locationValidation = SpreadsheetApp.newDataValidation()
@@ -100,7 +127,16 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
     this.getCell("Pickup Location").setDataValidation(locationValidation);
     this.getCell("Drop-off Location").setDataValidation(locationValidation);
 
-    // Set Nicki filters
+    // Set Customer filter
+    this.getCell("Customer").setDataValidation(
+      SpreadsheetApp.newDataValidation()
+        .requireValueInRange(
+          this.sheet.getRange(`'${config.CustomersSheetName}'!$B$2:$B`),
+        )
+        .build(),
+    );
+
+    // Set Nicki filter
     this.getCell("Nicki").setDataValidation(
       SpreadsheetApp.newDataValidation()
         .requireValueInRange(
@@ -114,7 +150,7 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       .requireValueInList([...OrderPriorities])
       .build();
     this.getCell("Priority").setDataValidation(priorityValidation);
-    this.setColumnWidth("Priority", 70);
+    this.setColumnWidth("Priority", 75);
 
     // set formulas in calculated fields
     const transactionCell = this.getCell("Transaction");
@@ -139,6 +175,75 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
       `=${nickiGrossCell.getA1Notation()} - ${transactionCell.getA1Notation()}`,
     );
   };
+
+  static newRow(
+    rowIndex: number = 0,
+    values: Partial<Record<OrderEntryColumn, [string | number | null]>> = {},
+  ) {
+    console.log(`OrderEditor.newRow(${rowIndex}, ${JSON.stringify(values)})`);
+
+    if (!rowIndex) {
+      rowIndex = OrderEditor.getOrdersSheet().getLastRow() + 1;
+    }
+
+    const editor = new OrderEditor(rowIndex);
+
+    const timestamp = Date.now();
+    const timestampDate = new Date(timestamp);
+
+    if (!editor.get("Created")) {
+      editor.setDate("Created", timestampDate);
+      editor.set("Status", "Draft" as OrderStatus);
+    }
+
+    const pickupDate = editor.get("Pickup Date");
+    console.log("Pickup date", typeof pickupDate, pickupDate);
+    // default date to today if not specified
+    if (!pickupDate) {
+      editor.setDate("Pickup Date", timestampDate);
+      console.log("Pickup date not set - defaulting to today");
+    }
+
+    editor.assignCustomer(
+      CustomerEditor.findCustomerByName(editor.get("Customer")?.trim()),
+    );
+
+    // set driver (or unassigned if none was provided)
+    editor.assignDriver(
+      findDriverByName(editor.get("Nicki")?.trim()) ||
+        findDriverById(UnassignedDriverId),
+    );
+
+    // Default Priority
+    editor.set(
+      "Priority",
+      editor.get("Priority") || ("Medium" as OrderPriority),
+    );
+
+    // copy the new locations if specified
+    if (editor.get("Drop-off Location").trim() === NewLocationName) {
+      editor.set(
+        "Drop-off Location",
+        editor.get("New Drop-off Location")?.trim(),
+      );
+    }
+    if (editor.get("Pickup Location").trim() === NewLocationName) {
+      editor.set("Pickup Location", editor.get("New Pickup Location")?.trim());
+    }
+
+    // set default drop-off location to "Home"
+    if (!editor.get("Drop-off Location")) {
+      editor.set("Drop-off Location", HomeLocationName);
+    }
+
+    try {
+      editor.formatCells();
+    } catch (ex: any) {
+      logError("Failed to format cells", ex);
+    }
+
+    return editor;
+  }
 
   static getOrdersSheet = (
     sheet?: GoogleAppsScript.Spreadsheet.Sheet | undefined,

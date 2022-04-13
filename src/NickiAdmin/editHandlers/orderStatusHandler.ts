@@ -1,5 +1,6 @@
 import { getLocation } from "../../services/locations";
 import { upsertOrder } from "../../services/optimoroute";
+import { notify } from "../../shared/audit";
 import { RowEditor } from "../../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus } from "../../shared/types";
 import { orderEditHandler } from "./orderEditHandler";
@@ -14,13 +15,22 @@ export const orderStatusHandler = orderEditHandler(
 
     switch (status) {
       case "Confirmed":
-        scheduleOrder(editor);
+        try {
+          createOrderInOptimoRoute(editor);
+        } catch (ex) {
+          // if we fail to create the order in OR, set the status back to Draft to try again
+          editor.set("Status", "Draft" as OrderStatus);
+
+          notify(
+            "Failed to create order in OptimoRoute - status has been reset to 'Draft'",
+          );
+        }
         break;
     }
   },
 );
 
-const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
+const createOrderInOptimoRoute = (editor: RowEditor<OrderEntryColumn>) => {
   const orderId =
     editor.get("Order ID") ||
     `${editor.get("Customer ID").replace(/^cus_/, "")}_${Date.now()}`;
@@ -71,5 +81,5 @@ const scheduleOrder = (editor: RowEditor<OrderEntryColumn>) => {
   );
 
   editor.set("Order ID", orderId);
-  editor.set("Status", "Scheduled" as OrderStatus);
+  editor.set("Status", "Created" as OrderStatus);
 };
