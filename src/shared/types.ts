@@ -93,7 +93,7 @@ export interface OrderDriver {
 export const OrderStatuses = [
   "Draft",
   "Confirmed",
-  "Created",
+  "In Optimo",
   "Delivered",
   "Invoiced",
   "Paid",

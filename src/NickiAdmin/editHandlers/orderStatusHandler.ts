@@ -81,5 +81,5 @@ const createOrderInOptimoRoute = (editor: RowEditor<OrderEntryColumn>) => {
   );
 
   editor.set("Order ID", orderId);
-  editor.set("Status", "Created" as OrderStatus);
+  editor.set("Status", "In Optimo" as OrderStatus);
 };
