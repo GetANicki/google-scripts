@@ -64,6 +64,7 @@ jobs:
 
       - name: Release Version
         id: release_version
+        if: endsWith(github.ref, 'main')
         uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
