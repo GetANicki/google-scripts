@@ -9,7 +9,7 @@ import { logError, logMessage } from "../../shared/audit";
 import { OrderFormEntry, OrderStatus } from "../../shared/types";
 import { trim } from "../../shared/util";
 
-const OrderStatusesToSync: OrderStatus[] = ["Created", "Delivered"];
+const OrderStatusesToSync: OrderStatus[] = ["In Optimo", "Delivered"];
 
 export const syncCompletedOrders = () => {
   const ordersToSync = getOrders().filter((x) =>

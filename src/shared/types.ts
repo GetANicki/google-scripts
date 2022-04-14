@@ -1,5 +1,3 @@
-import { CamelCase } from "type-fest";
-
 export interface Address {
   line1: string;
   line2: string | null;
@@ -93,7 +91,7 @@ export interface OrderDriver {
 export const OrderStatuses = [
   "Draft",
   "Confirmed",
-  "Created",
+  "In Optimo",
   "Delivered",
   "Invoiced",
   "Paid",

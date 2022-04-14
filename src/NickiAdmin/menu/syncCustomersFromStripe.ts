@@ -5,7 +5,6 @@ import {
 import { logError, logMessage } from "../../shared/audit";
 import {
   Customer,
-  OrderEntryColumn,
   Product,
   SheetCustomer,
   SheetCustomerColumn,
@@ -61,7 +60,7 @@ export const syncCustomersFromStripe = () => {
   try {
     //deleteInactiveStripeCustomers(diff.removals);
   } catch (ex: any) {
-    logError("Falied to delete inactive customers", ex);
+    logError("Failed to delete inactive customers", ex);
   }
 
   CustomerEditor.sort();
@@ -85,18 +84,21 @@ export const getDiffs = (
   sheetCustomers: SheetCustomer[],
   stripeCustomersWithProduct: [Customer, Product | null][],
 ) => {
-  const stripeCustomers = stripeCustomersWithProduct.map(
-    ([cus, prod]) =>
-      ({
-        address: onelineAddress(cus.address),
-        customerId: cus.id,
-        displayName: cus.name,
-        ...parseName(cus.name),
-        email: cus.email,
-        phone: cus.phone,
-        plan: prod?.name,
-      } as SheetCustomer),
-  );
+  const stripeCustomers = stripeCustomersWithProduct
+    .map(
+      ([cus, prod]) =>
+        ({
+          address: onelineAddress(cus.address),
+          customerId: cus.id,
+          displayName: cus.name,
+          ...parseName(cus.name),
+          email: cus.email,
+          phone: cus.phone,
+          plan: prod?.name,
+        } as SheetCustomer),
+    )
+    .map((x) => ({ ...x, displayName: displayName(x) }));
+
   const existingIds = sheetCustomers.map((x) => x.customerId);
   const stripeIds = stripeCustomers.map((x) => x.customerId);
 
@@ -117,6 +119,9 @@ export const getDiffs = (
 
   return { additions, removals, updates };
 };
+
+const displayName = (x: SheetCustomer): string =>
+  x.address?.trim() ? x.displayName : `${x.displayName} <NO ADDR>`;
 
 interface CustomerDiff {
   customerId: string;

@@ -136,5 +136,5 @@ export class CustomerEditor extends RowEditor<SheetCustomerColumn> {
     CustomerEditor.findCustomerById(id)?.remove();
 
   static sort = () =>
-    CustomerEditor.getCustomersSheet().getRange("A2:G").sort(2);
+    CustomerEditor.getCustomersSheet().getRange("A2:H").sort(2);
 }

@@ -32,7 +32,10 @@ export const onelineAddress = (
         address.state,
         address.postal_code,
         address.country,
-      ].join(", ")
+      ]
+        .filter((x) => !!x)
+        .join(", ")
+        .trim()
     : null;
 
 export const trim = (val: any) => {

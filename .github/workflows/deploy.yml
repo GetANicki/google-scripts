@@ -63,9 +63,7 @@ jobs:
           command: "push"
 
       - name: Release Version
-        id: version
-        if: endsWith(github.ref, 'main')
-        uses: paulhatch/semantic-version@v4.0.2
+        id: release_version
+        uses: mathieudutour/github-tag-action@v6.0
         with:
-          bump_each_commit: true
-          change_path: "src"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
