@@ -57,3 +57,9 @@ export function formatAsCurrency(
 ) {
   ranges.forEach((x) => x.setNumberFormat("$#,##0.00;$(#,##0.00)"));
 }
+
+export function formatAsTimeWindow(
+  ...ranges: GoogleAppsScript.Spreadsheet.Range[]
+) {
+  ranges.forEach((x) => x.setNumberFormat("@STRING@"));
+}

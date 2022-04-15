@@ -45,6 +45,10 @@ Content-Type: application/json
         "acceptPartialMatch": true,
         "acceptMultipleResults": true
     },
+    "timeWindows": [{
+        "twFrom": "11:00",
+        "twTo": "17:00"
+    }],
     "duration": 10,
     "notes": "Pickup RX# 1233232, T. User"
 }

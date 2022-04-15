@@ -1,6 +1,10 @@
 import { logError, logMessage } from "../shared/audit";
 import config from "../shared/config";
-import { formatAsCurrency, readSpreadsheet } from "../shared/googleExt";
+import {
+  formatAsCurrency,
+  formatAsTimeWindow,
+  readSpreadsheet,
+} from "../shared/googleExt";
 import { RowEditor } from "../shared/RowEditor";
 import {
   Driver,
@@ -133,6 +137,7 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
         .requireValueInRange(
           this.sheet.getRange(`'${config.CustomersSheetName}'!$B$2:$B`),
         )
+        .setAllowInvalid(false)
         .build(),
     );
 
@@ -142,15 +147,28 @@ export class OrderEditor extends RowEditor<OrderEntryColumn> {
         .requireValueInRange(
           this.sheet.getRange(`'${config.NickiDriversSheetName}'!$B$2:$B`),
         )
+        .setAllowInvalid(false)
         .build(),
     );
 
     // Set status filter
     const priorityValidation = SpreadsheetApp.newDataValidation()
       .requireValueInList([...OrderPriorities])
+      .setAllowInvalid(false)
       .build();
     this.getCell("Priority").setDataValidation(priorityValidation);
     this.setColumnWidth("Priority", 75);
+
+    formatAsTimeWindow(
+      ...(
+        [
+          "Pickup Time - From",
+          "Pickup Time - To",
+          "Drop-off Time - From",
+          "Drop-off Time - To",
+        ] as OrderEntryColumn[]
+      ).map((x) => this.getCell(x)),
+    );
 
     // set formulas in calculated fields
     const transactionCell = this.getCell("Transaction");

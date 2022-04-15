@@ -1,6 +1,6 @@
 import { getLocation } from "../../services/locations";
 import { upsertOrder } from "../../services/optimoroute";
-import { notify } from "../../shared/audit";
+import { logError, notify } from "../../shared/audit";
 import { RowEditor } from "../../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus } from "../../shared/types";
 import { orderEditHandler } from "./orderEditHandler";
@@ -17,12 +17,13 @@ export const orderStatusHandler = orderEditHandler(
       case "Confirmed":
         try {
           createOrderInOptimoRoute(editor);
-        } catch (ex) {
+        } catch (ex: any) {
           // if we fail to create the order in OR, set the status back to Draft to try again
           editor.set("Status", "Draft" as OrderStatus);
 
-          notify(
+          logError(
             "Failed to create order in OptimoRoute - status has been reset to 'Draft'",
+            ex,
           );
         }
         break;
@@ -69,6 +70,8 @@ const createOrderInOptimoRoute = (editor: RowEditor<OrderEntryColumn>) => {
       attachment: editor.get("Attachment"),
       priority: editor.get("Priority"),
       driverId: editor.get("Nicki ID"),
+      timeFrom: editor.get("Pickup Time - From"),
+      timeTo: editor.get("Pickup Time - To"),
     },
     {
       date,
@@ -77,6 +80,8 @@ const createOrderInOptimoRoute = (editor: RowEditor<OrderEntryColumn>) => {
       notes: editor.get("Drop-off Comments"),
       phone: editor.get("Drop-off Phone Number"),
       customerName: editor.get("Customer"),
+      timeFrom: editor.get("Drop-off Time - From"),
+      timeTo: editor.get("Drop-off Time - To"),
     },
   );
 

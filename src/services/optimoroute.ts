@@ -1,3 +1,4 @@
+import { text } from "stream/consumers";
 import { logMessage } from "../shared/audit";
 import config from "../shared/config";
 import { Location, OrderPriority } from "../shared/types";
@@ -39,6 +40,8 @@ export interface OptimoRouteOrder {
   link?: string;
   customerName?: string;
   attachment?: string;
+  timeTo?: string;
+  timeFrom?: string;
 }
 
 export interface OptimoRouteInfo {
@@ -85,6 +88,7 @@ export const upsertOrder = (
         acceptPartialMatch: !pickup.location.latitude,
         acceptMultipleResults: !pickup.location.latitude,
       },
+      timeWindows: [getTimeWindow(pickup)].filter((x) => x?.twFrom || x?.twTo),
       duration: (pickup.duration && +pickup.duration) || 5,
       priority: (pickup.priority || "Medium").substring(0, 1),
       notes: pickup.notes,
@@ -116,6 +120,9 @@ export const upsertOrder = (
         acceptPartialMatch: !delivery.location.latitude,
         acceptMultipleResults: !delivery.location.latitude,
       },
+      timeWindows: [getTimeWindow(delivery)].filter(
+        (x) => x?.twFrom || x?.twTo,
+      ),
       duration: (delivery.duration && +delivery.duration) || 5,
       priority: (delivery.priority || pickup.priority || "Medium").substring(
         0,
@@ -184,6 +191,19 @@ export const getRoutes = (date: Date) =>
     method: "get",
   });
 
+interface TimeWindow {
+  twFrom: string;
+  twTo: string;
+}
+
+const getTimeWindow = (order: OptimoRouteOrder): TimeWindow | null =>
+  order?.timeFrom || order?.timeTo
+    ? {
+        twFrom: validatedTime(order?.timeFrom?.trim() || "00:00"),
+        twTo: validatedTime(order?.timeTo?.trim() || "23:59"),
+      }
+    : null;
+
 const fetch = <T>(
   path: string,
   {
@@ -228,4 +248,14 @@ const fetch = <T>(
 
     return body as T;
   }
+};
+
+const validatedTime = (time: string): string => {
+  if (!/[0-2][0-9]:[0-5][0-9]/.test(time)) {
+    throw Error(
+      `Invalid time window: ${time} - must be in 24-hour (##:##) format`,
+    );
+  }
+
+  return time;
 };
