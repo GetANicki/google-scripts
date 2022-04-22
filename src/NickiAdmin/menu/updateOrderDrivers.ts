@@ -5,7 +5,7 @@ import { OrderDriver } from "../../shared/types";
 
 export const updateOrderDrivers = () => {
   const ordersWithoutDrivers = getOrders().filter(
-    (x) => !x.nicki && !!x.pickupDate,
+    (x) => !!x.orderId && !x.nicki && !!x.pickupDate,
   );
 
   const orderDates = [

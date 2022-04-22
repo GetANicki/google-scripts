@@ -1,6 +1,27 @@
 import camelcase from "camelcase";
 import { Row } from "./types";
 
+export function deleteEmptyRows(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
+  const data = sheet?.getDataRange()?.getDisplayValues();
+
+  const emptyRowNumbers = data
+    .map((x, i) =>
+      x
+        .flatMap((x) => x)
+        .map((x) => x.replace(",", "").trim())
+        .filter(Boolean).length
+        ? null
+        : i + 1,
+    )
+    .filter(Boolean)
+    .reverse() as number[];
+
+  for (const row of emptyRowNumbers) {
+    sheet.deleteRow(row);
+    console.log(`Deleted empty order row ${row}`);
+  }
+}
+
 export function readSpreadsheet<T>(
   ss: GoogleAppsScript.Spreadsheet.Sheet,
 ): Row<T>[] {

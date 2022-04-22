@@ -80,7 +80,7 @@ export const assignDriversToOrders = (orderDrivers: OrderDriver[]) => {
         );
       }
     } else {
-      logError(`Unable to find order ${orderNo}`);
+      logMessage(`Unable to update driver information for order ${orderNo}`);
     }
   });
 };
