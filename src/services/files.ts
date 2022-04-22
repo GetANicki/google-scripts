@@ -16,15 +16,11 @@ export const saveFile = (
   blob: GoogleAppsScript.Base.Blob,
 ): SaveFileResponse => {
   const rootFolder = getRootFolder();
-  if (rootFolder) console.log("Got root folder");
-
   const existingFolders = rootFolder.getFoldersByName(folderName);
 
   const folder = existingFolders.hasNext()
     ? existingFolders.next()
     : rootFolder.createFolder(folderName);
-
-  if (folder) console.log("Got file folder");
 
   const existingFiles = folder.getFilesByName(blob.getName());
   const existingFile = existingFiles.hasNext() ? existingFiles.next() : null;

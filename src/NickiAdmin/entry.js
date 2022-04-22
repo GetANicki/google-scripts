@@ -22,6 +22,14 @@ function uploadFile(e) {
   Nicki.uploadFile(e);
 }
 
+function archiveDeliveredOrders() {
+  Nicki.archiveDeliveredOrders();
+}
+
+function syncCompletedOrders() {
+  Nicki.syncCompletedOrders();
+}
+
 function test() {
   Nicki.saveLocation({ address: "1087 Country Hills Rd, Yardley, PA 19067" });
 }

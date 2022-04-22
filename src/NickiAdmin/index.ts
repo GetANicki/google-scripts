@@ -2,6 +2,9 @@ export { onEdit } from "./onEdit";
 export { onFormSubmit } from "./onFormSubmit";
 export { logError } from "../shared/audit";
 
+export { archiveDeliveredOrders } from "./menu/archiveDeliveredOrders";
+export { syncCompletedOrders } from "./menu/syncCompletedOrders";
+
 // Menu exports
 export * from "./menu";
 import * as menu from "./menu";
