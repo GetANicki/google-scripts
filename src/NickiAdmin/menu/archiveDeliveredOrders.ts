@@ -1,5 +1,7 @@
 import { getOrders, OrderEditor } from "../../services/orders";
+import { logError, logMessage } from "../../shared/audit";
 import config from "../../shared/config";
+import { deleteEmptyRows } from "../../shared/googleExt";
 import { RowEditor } from "../../shared/RowEditor";
 import { OrderStatus } from "../../shared/types";
 
@@ -15,6 +17,8 @@ export const archiveDeliveredOrders = () => {
     config.ArchivedOrdersSheetName,
   );
 
+  validateHeaders(orderSheet, archivedOrdersSheet);
+
   for (const order of ordersToArchive) {
     const newRow = archivedOrdersSheet.getRange(
       archivedOrdersSheet.getLastRow() + 1,
@@ -25,7 +29,7 @@ export const archiveDeliveredOrders = () => {
 
     orderSheet.getRange(`${order.row}:${order.row}`).moveTo(newRow);
 
-    console.log(
+    logMessage(
       `Archived order ${order.orderId} (customer ${order.customerId} - ${order.customer})`,
     );
   }
@@ -35,23 +39,29 @@ export const archiveDeliveredOrders = () => {
   return ordersToArchive.length;
 };
 
-function deleteEmptyRows(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
-  const data = sheet?.getDataRange()?.getDisplayValues();
+const validateHeaders = (
+  src1: GoogleAppsScript.Spreadsheet.Sheet,
+  src2: GoogleAppsScript.Spreadsheet.Sheet,
+) => {
+  const src1Headers = RowEditor.getHeaders(src1);
+  const src2Headers = RowEditor.getHeaders(src2);
 
-  const emptyRowNumbers = data
-    .map((x, i) =>
-      x
-        .flatMap((x) => x)
-        .map((x) => x.replace(",", "").trim())
-        .filter(Boolean).length
-        ? null
-        : i + 1,
-    )
-    .filter(Boolean)
-    .reverse() as number[];
+  const results = src1Headers.filter(Boolean).map((x, i) => ({
+    header: x,
+    valid: i === src2Headers.indexOf(x),
+  }));
 
-  for (const row of emptyRowNumbers) {
-    sheet.deleteRow(row);
-    console.log(`Deleted empty order row ${row}`);
+  console.log(`Headers: ${JSON.stringify(results, null, 2)}`);
+
+  const invalidHeaders = results.filter((x) => !x.valid).map((x) => x.header);
+
+  console.log(`Invalid headers: ${invalidHeaders.join(", ")}`);
+
+  if (invalidHeaders.length) {
+    logError(
+      `** Column Mismatch ** The following headers are out of place: ${invalidHeaders.join(
+        ", ",
+      )}`,
+    );
   }
-}
+};
