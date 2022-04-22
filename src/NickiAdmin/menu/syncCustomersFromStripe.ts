@@ -77,7 +77,10 @@ export const parseName = (name: string) => {
 
   const [firstName, ...lastNameParts] = parts;
 
-  return { firstName, lastName: lastNameParts.join(" ") };
+  return {
+    firstName: firstName?.trim(),
+    lastName: lastNameParts.map((x) => x?.trim()).join(" "),
+  };
 };
 
 export const getDiffs = (

@@ -158,7 +158,7 @@ export class RowEditor<TColumnsType extends string> {
       .getValues()[0]
       .map((x) => x.trim());
 
-  protected static getSheet = (
+  static getSheet = (
     name: string,
     sheet?: GoogleAppsScript.Spreadsheet.Sheet,
   ): GoogleAppsScript.Spreadsheet.Sheet =>

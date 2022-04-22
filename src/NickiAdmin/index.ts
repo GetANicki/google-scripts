@@ -29,6 +29,10 @@ export const menuItems: (
     function: "Nicki.menu_SyncCompletedOrders",
   },
   {
+    name: "Archive Orders",
+    function: "Nicki.menu_ArchiveOrders",
+  },
+  {
     name: "(Re)Format current row",
     function: "Nicki.menu_FormatCurrentRow",
   },

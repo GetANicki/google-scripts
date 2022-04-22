@@ -8,6 +8,7 @@ import { formatCurrentRow } from "./formatCurrentRow";
 import { OrderEditor } from "../../services/orders";
 import uploadImageHtml from "./uploadImage/upload.html";
 import { syncCustomersFromStripe } from "./syncCustomersFromStripe";
+import { archiveDeliveredOrders } from "./archiveDeliveredOrders";
 
 // Not a menu item, but used by a menu item
 export { uploadFile } from "./uploadImage/uploadFile";
@@ -19,6 +20,15 @@ export function menu_AddOrder() {
     notify(`Added new Order Row ${editor.rowIndex}`);
   } catch (error: any) {
     logError("menu_AddOrder", error);
+  }
+}
+
+export function menu_ArchiveOrders() {
+  try {
+    const count = archiveDeliveredOrders();
+    notify(`Archived ${count} orders`);
+  } catch (error: any) {
+    logError("menu_ArchiveOrders", error);
   }
 }
 

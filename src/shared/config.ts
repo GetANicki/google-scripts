@@ -1,4 +1,6 @@
 const config = {
+  ArchivedOrdersSheetName:
+    process.env.ARCHIVED_ORDERS_SHEET_NAME || "Archived Orders",
   AuditSheetName: "Logs",
   CustomersSheetName: "Customers",
   FileStorageFolderId: process.env.SAVED_FILES_FOLDER_ID!,
