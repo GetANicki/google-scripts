@@ -42,7 +42,9 @@ export const audit = (entry: MessageAuditEntry | ValueChangeAuditEntry) => {
 
   console.log(JSON.stringify(entry));
 
-  AuditRowEditor.insertRow(entry);
+  if (entry.type !== "Change") {
+    AuditRowEditor.insertRow(entry);
+  }
 
   if (entry.type === "Error" || entry.type === "Notification") {
     try {
