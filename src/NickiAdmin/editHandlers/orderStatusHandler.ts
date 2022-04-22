@@ -1,6 +1,6 @@
 import { getLocation } from "../../services/locations";
 import { upsertOrder } from "../../services/optimoroute";
-import { logError, notify } from "../../shared/audit";
+import { logError } from "../../shared/audit";
 import { RowEditor } from "../../shared/RowEditor";
 import { OrderEntryColumn, OrderStatus } from "../../shared/types";
 import { orderEditHandler } from "./orderEditHandler";

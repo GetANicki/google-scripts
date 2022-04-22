@@ -12,8 +12,8 @@ import { trim } from "../../shared/util";
 const OrderStatusesToSync: OrderStatus[] = ["In Optimo", "Delivered"];
 
 export const syncCompletedOrders = () => {
-  const ordersToSync = getOrders().filter((x) =>
-    OrderStatusesToSync.includes(x.status),
+  const ordersToSync = getOrders().filter(
+    (x) => !!x.orderId && OrderStatusesToSync.includes(x.status),
   );
 
   if (!ordersToSync.length) {
@@ -39,7 +39,7 @@ export const syncCompletedOrders = () => {
     if (order) {
       syncCompletedOrder(detail, order);
     } else {
-      logError(`Unable to find order ${orderId}`);
+      logMessage(`Unable to find order ${orderId}`);
       return;
     }
   }
