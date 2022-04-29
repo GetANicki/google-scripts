@@ -49,6 +49,10 @@ export interface Customer {
   phone?: string;
   email?: string;
   address?: Address;
+  shipping?: {
+    address?: Address;
+    name: string;
+  };
 }
 
 export interface SheetCustomer {
@@ -61,6 +65,8 @@ export interface SheetCustomer {
   email: string;
   plan: string;
   address: string;
+  billingAddress: string;
+  shippingAddress: string;
 }
 
 export const SheetCustomerColumns = [
@@ -72,6 +78,8 @@ export const SheetCustomerColumns = [
   "Email",
   "Plan",
   "Address",
+  "Billing Address",
+  "Shipping Address",
 ] as const;
 
 export type SheetCustomerColumn = typeof SheetCustomerColumns[number];
