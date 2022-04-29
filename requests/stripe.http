@@ -1,6 +1,6 @@
 @apiKey = {{stripeApiKey}}
 #@testCustomerId = cus_LHejWZ80NfdZkb
-@testCustomerId = cus_LLOkMjkqbYnhCP
+@testCustomerId = cus_Lb5dTrGJ6ywlIZ
 
 
 ### Get customers

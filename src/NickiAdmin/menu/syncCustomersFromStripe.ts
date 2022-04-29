@@ -91,13 +91,17 @@ export const getDiffs = (
     .map(
       ([cus, prod]) =>
         ({
-          address: onelineAddress(cus.address),
+          address:
+            onelineAddress(cus.shipping?.address) ||
+            onelineAddress(cus.address),
           customerId: cus.id,
           displayName: cus.name,
           ...parseName(cus.name),
           email: cus.email,
           phone: cus.phone,
           plan: prod?.name,
+          billingAddress: onelineAddress(cus.address),
+          shippingAddress: onelineAddress(cus.shipping?.address),
         } as SheetCustomer),
     )
     .map((x) => ({ ...x, displayName: displayName(x) }));
@@ -173,6 +177,10 @@ const getColumn = (prop: keyof SheetCustomer): SheetCustomerColumn => {
       return "Phone";
     case "plan":
       return "Plan";
+    case "billingAddress":
+      return "Billing Address";
+    case "shippingAddress":
+      return "Shipping Address";
 
     default:
       throw Error(`Invalid column: ${prop}`);
